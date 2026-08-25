@@ -1,0 +1,38 @@
+contract_version: 1
+id: RHSA-MODULE-000
+title: Question Title
+version: 1
+module: module-id
+difficulty: beginner
+
+submission:
+  filename: answer.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.2
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables: {}
+
+execution:
+  command:
+    - bash
+    - /submission/answer.sh
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 10
+    - id: required_state
+      points: 80
+    - id: idempotency
+      points: 10

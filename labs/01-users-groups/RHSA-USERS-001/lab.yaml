@@ -1,0 +1,58 @@
+contract_version: 1
+id: RHSA-USERS-001
+title: User and Group Provisioning
+version: 1
+module: users-groups
+difficulty: beginner
+
+submission:
+  filename: provision_user.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.2
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_USERNAME:
+    type: random_username
+  TEST_GROUP:
+    type: random_group
+
+execution:
+  command:
+    - bash
+    - /submission/provision_user.sh
+    - "${TEST_USERNAME}"
+    - "${TEST_GROUP}"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: group_created
+      points: 15
+    - id: user_created
+      points: 15
+    - id: bash_shell
+      points: 10
+    - id: group_membership
+      points: 15
+    - id: directory_created
+      points: 10
+    - id: directory_group
+      points: 10
+    - id: permissions
+      points: 10
+    - id: idempotency
+      points: 5

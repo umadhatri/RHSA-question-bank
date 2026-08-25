@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cyberrange.local/schemas/rhsa-grade-result-v1.json",
+  "title": "CyberRange Linux Sysadmin Grade Result v1",
+  "type": "object",
+  "required": [
+    "contract_version", "runner_version", "lab_id", "title", "lab_version",
+    "score", "max_score", "pass_score", "passed", "tests", "metadata"
+  ],
+  "properties": {
+    "contract_version": {"const": 1},
+    "runner_version": {"type": "string"},
+    "lab_id": {"type": "string"},
+    "title": {"type": "string"},
+    "lab_version": {"type": ["string", "integer"]},
+    "score": {"type": "integer", "minimum": 0},
+    "max_score": {"type": "integer", "minimum": 1},
+    "pass_score": {"type": "integer", "minimum": 0},
+    "passed": {"type": "boolean"},
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "passed", "points", "max_points", "feedback"],
+        "properties": {
+          "id": {"type": "string"},
+          "passed": {"type": "boolean"},
+          "points": {"type": "integer", "minimum": 0},
+          "max_points": {"type": "integer", "minimum": 0},
+          "feedback": {"type": "string"}
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "seed", "variables", "image", "submission_filename", "submission_sha256",
+        "lab_package_sha256", "first_run", "second_run"
+      ]
+    }
+  }
+}

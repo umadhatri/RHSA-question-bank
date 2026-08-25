@@ -1,0 +1,10 @@
+contract_version: 1
+id: RHSA-BASH-LABS
+title: Linux System Administration Bash Labs
+version: 0.2.0
+platform: CyberRange
+execution_model: disposable-container
+modules:
+  - id: users-groups
+    title: Users and Groups
+    path: labs/01-users-groups
