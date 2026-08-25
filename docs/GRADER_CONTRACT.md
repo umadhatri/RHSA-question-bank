@@ -36,7 +36,7 @@ The grader returns the result of `GradeBook.finalize()`.
 ## Lifecycle
 
 1. Create a pristine grading container.
-2. Run trusted `setup.sh` and remove it.
+2. Run trusted `setup.sh` with generated lab variables available as environment variables, then remove it.
 3. Copy only the student submission into `/submission`.
 4. Run `bash -n`.
 5. Execute the submission once with hidden/randomized inputs.
@@ -65,7 +65,7 @@ Prefer observable postconditions over source matching. Regex checks should not b
 
 Every result records at least:
 
-- random seed and generated variables;
+- random seed and generated variables (all contract-provided random generators must be seed-reproducible);
 - student submission SHA-256;
 - grading-relevant lab-package SHA-256;
 - container image name and local image ID;

@@ -62,7 +62,7 @@ def main() -> int:
     args = parser.parse_args()
 
     course = load_yaml(ROOT / "course.yaml")
-    discovered: list[Path] = []
+    discovered: list[tuple[Path, str]] = []
     failures = 0
 
     for module in course.get("modules", []):
@@ -73,14 +73,24 @@ def main() -> int:
             continue
         for candidate in sorted(module_path.iterdir()):
             if candidate.is_dir() and (candidate / "lab.yaml").exists():
-                discovered.append(candidate)
+                discovered.append((candidate, module["id"]))
 
     if not discovered:
         print("[FAIL] no lab questions discovered")
         return 1
 
-    for lab_dir in discovered:
+    seen_ids: set[str] = set()
+    for lab_dir, module_id in discovered:
         errors = validate_lab_dir(lab_dir)
+        if not errors:
+            lab = load_yaml(lab_dir / "lab.yaml")
+            if lab.get("module") != module_id:
+                errors.append(
+                    f"lab module {lab.get('module')!r} does not match course module {module_id!r}"
+                )
+            if lab["id"] in seen_ids:
+                errors.append(f"duplicate lab id: {lab['id']}")
+            seen_ids.add(lab["id"])
         if errors:
             failures += 1
             print(f"[FAIL] {lab_dir.name}")

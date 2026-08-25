@@ -5,37 +5,107 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "contract_version", "id", "title", "version", "module", "difficulty",
-    "submission", "environment", "execution", "grading"
+    "contract_version",
+    "id",
+    "title",
+    "version",
+    "module",
+    "difficulty",
+    "submission",
+    "environment",
+    "execution",
+    "grading"
   ],
   "properties": {
-    "contract_version": {"const": 1},
-    "id": {"type": "string", "pattern": "^RHSA-[A-Z0-9]+-[0-9]{3}$"},
-    "title": {"type": "string", "minLength": 3},
-    "version": {"type": ["string", "integer"]},
-    "module": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
-    "difficulty": {"enum": ["beginner", "intermediate", "advanced"]},
+    "contract_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^RHSA-[A-Z0-9]+-[0-9]{3}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "version": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "module": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "difficulty": {
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
     "submission": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["filename", "interpreter"],
+      "required": [
+        "filename",
+        "interpreter"
+      ],
       "properties": {
-        "filename": {"type": "string", "pattern": "^[A-Za-z0-9._-]+\\.sh$"},
-        "interpreter": {"const": "bash"}
+        "filename": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]+\\.sh$"
+        },
+        "interpreter": {
+          "const": "bash"
+        }
       }
     },
     "environment": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["image", "timeout_seconds", "memory", "cpus", "pids_limit", "network"],
+      "required": [
+        "image",
+        "timeout_seconds",
+        "memory",
+        "cpus",
+        "pids_limit",
+        "network"
+      ],
       "properties": {
-        "image": {"type": "string", "minLength": 1},
-        "build_context": {"type": "string", "minLength": 1},
-        "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 300},
-        "memory": {"type": "string", "pattern": "^[0-9]+[mMgG]$"},
-        "cpus": {"type": ["string", "number"]},
-        "pids_limit": {"type": ["string", "integer"]},
-        "network": {"const": "none"}
+        "image": {
+          "type": "string",
+          "minLength": 1
+        },
+        "build_context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^[0-9]+[mMgG]$"
+        },
+        "cpus": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "pids_limit": {
+          "type": [
+            "string",
+            "integer"
+          ]
+        },
+        "network": {
+          "const": "none"
+        }
       }
     },
     "variables": {
@@ -43,42 +113,106 @@
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "properties": {
-          "type": {"enum": ["random_username", "random_group", "random_token", "literal"]},
-          "value": {"type": ["string", "number", "boolean"]}
+          "type": {
+            "enum": [
+              "random_username",
+              "random_group",
+              "random_token",
+              "random_ipv4",
+              "random_int",
+              "literal"
+            ]
+          },
+          "value": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          },
+          "min": {
+            "type": "integer"
+          },
+          "max": {
+            "type": "integer"
+          }
         }
+      },
+      "propertyNames": {
+        "pattern": "^[A-Z][A-Z0-9_]*$"
       }
     },
     "execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["command", "repeat_for_idempotency"],
+      "required": [
+        "command",
+        "repeat_for_idempotency"
+      ],
       "properties": {
-        "command": {"type": "array", "minItems": 1, "items": {"type": "string"}},
-        "repeat_for_idempotency": {"const": true}
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "repeat_for_idempotency": {
+          "const": true
+        }
       }
     },
     "grading": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["total_points", "pass_score", "criteria"],
+      "required": [
+        "total_points",
+        "pass_score",
+        "criteria"
+      ],
       "properties": {
-        "total_points": {"type": "integer", "minimum": 1},
-        "pass_score": {"type": "integer", "minimum": 0},
+        "total_points": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pass_score": {
+          "type": "integer",
+          "minimum": 0
+        },
         "criteria": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "points"],
+            "required": [
+              "id",
+              "points"
+            ],
             "properties": {
-              "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
-              "points": {"type": "integer", "minimum": 0}
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "points": {
+                "type": "integer",
+                "minimum": 0
+              }
             }
           }
         }
+      }
+    },
+    "learning_objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
       }
     }
   }

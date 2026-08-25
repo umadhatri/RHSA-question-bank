@@ -14,7 +14,7 @@ from grader.api import GradeBook, RootfsSnapshot, SnapshotSet
 from grader.validation import validate_grader_signature, validate_lab_config
 
 ROOT = Path(__file__).resolve().parents[1]
-LAB_DIR = ROOT / "labs" / "01-users-groups" / "RHSA-USERS-001"
+LAB_DIR = ROOT / "labs" / "03-users-groups" / "RHSA-USERS-001"
 
 
 def add_file(tar: tarfile.TarFile, name: str, content: str, mode: int = 0o644, uid: int = 0, gid: int = 0):

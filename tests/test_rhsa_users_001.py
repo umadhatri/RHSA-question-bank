@@ -12,7 +12,7 @@ import yaml
 from grader.api import SnapshotSet
 
 ROOT = Path(__file__).resolve().parents[1]
-LAB_DIR = ROOT / "labs" / "01-users-groups" / "RHSA-USERS-001"
+LAB_DIR = ROOT / "labs" / "03-users-groups" / "RHSA-USERS-001"
 
 
 def add_file(tar: tarfile.TarFile, name: str, content: str):

@@ -1,8 +1,18 @@
 # CyberRange Linux Sysadmin Bash Autograder
 
-A terminal-only, state-based autograder for Linux system-administration Bash labs. Students write scripts in the terminal; each submission runs in a fresh RHEL-compatible container; hidden Python graders inspect Linux state and award criterion-level marks.
+A terminal-only, state-based autograder and private question bank for Linux system-administration Bash labs. Students write scripts in the terminal; each grading attempt runs in a fresh RHEL-compatible container; hidden Python graders inspect the resulting Linux state or generated artifacts and award criterion-level marks.
 
-The repository is designed to become the **private course question bank**. Adding a new lab should require new course content, not changes to the CyberRange backend.
+## Question bank v0.3
+
+The bank currently contains five labs:
+
+- `RHSA-SHELL-001` — File Organizer
+- `RHSA-FILE-001` — Secure Shared Project Directory
+- `RHSA-USERS-001` — User and Group Provisioning
+- `RHSA-TEXT-001` — Failed SSH Login Analyzer
+- `RHSA-BACKUP-001` — Automated Compressed Backup
+
+See `docs/QUESTION_BANK.md` for the module map and skills covered.
 
 ## Contract v1
 
@@ -11,30 +21,15 @@ The stable question/grader interface is documented in `docs/GRADER_CONTRACT.md`.
 Core guarantees:
 
 - one disposable container per grading attempt;
-- randomized hidden values to discourage hard-coded answers;
-- state-based checks instead of regex matching;
+- seed-reproducible hidden values to discourage hard-coded answers;
+- state/artifact-based checks instead of regex command matching;
 - partial rubric scoring;
 - two filesystem snapshots (`after_first`, `after_second`) for strong idempotency checking;
 - hidden graders never copied into the student container;
 - no network access in grading containers;
 - CPU, memory, and PID limits;
 - reproducibility metadata and structured result JSON;
-- schema validation and CI checks for question authors.
-
-## Repository layout
-
-```text
-linux-sysadmin-autograder/
-├── course.yaml
-├── grader/                  # generic engine; question authors normally do not edit
-├── schemas/                 # lab + result contracts
-├── docker/base/             # Rocky Linux base image
-├── labs/                    # actual private question bank
-├── templates/lab-template/  # copy when authoring a new question
-├── tests/                   # contract + grader unit tests
-├── scripts/
-└── docs/GRADER_CONTRACT.md
-```
+- schema validation, grader unit tests, and CI checks for question authors.
 
 ## Setup
 
@@ -44,61 +39,58 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Build the base image:
-
-```bash
-./scripts/build-base.sh
-```
-
-## Validate the repository
-
-No Docker required:
+Validate the repository without Docker:
 
 ```bash
 ./scripts/test.sh
 ```
 
-This should be run before every commit that adds or changes a lab.
-
-## Run the reference lab
-
-Correct submission:
+Build the Rocky Linux grading image:
 
 ```bash
-python3 grader/runner.py \
-  --lab labs/01-users-groups/RHSA-USERS-001 \
-  --submission examples/student_good.sh
+./scripts/build-base.sh
 ```
 
-Intentionally broken submission:
-
-```bash
-python3 grader/runner.py \
-  --lab labs/01-users-groups/RHSA-USERS-001 \
-  --submission examples/student_bad.sh
-```
-
-Full smoke test:
+Run every reference solution end-to-end plus the canonical broken sample:
 
 ```bash
 ./scripts/smoke-test.sh
 ```
 
-Write structured output for later FastAPI/CyberRange integration:
+Run one lab directly:
 
 ```bash
 python3 grader/runner.py \
-  --lab labs/01-users-groups/RHSA-USERS-001 \
+  --lab labs/01-shell-basics/RHSA-SHELL-001 \
+  --submission labs/01-shell-basics/RHSA-SHELL-001/reference/solution.sh \
+  --seed 424242
+```
+
+To write a structured result for later FastAPI/CyberRange integration:
+
+```bash
+python3 grader/runner.py \
+  --lab labs/03-users-groups/RHSA-USERS-001 \
   --submission examples/student_good.sh \
+  --seed 424242 \
   --json-out result.json
 ```
 
-## Current reference question
+## Repository layout
 
-`RHSA-USERS-001 — User and Group Provisioning` is the canonical contract-v1 example. It checks users, groups, shell, membership, directory creation, group ownership, permissions, and strong idempotency.
-
-A correct script should score 100/100. The intentionally broken sample should fail and, under contract v1, cannot receive idempotency points merely because its second execution exits successfully.
+```text
+linux-sysadmin-autograder/
+├── course.yaml
+├── grader/                  # generic engine
+├── schemas/                 # lab + result contracts
+├── docker/base/             # Rocky Linux base image
+├── labs/                    # private question bank
+├── templates/lab-template/  # starting point for new questions
+├── tests/                   # contract + hidden-grader unit tests
+├── scripts/
+└── docs/
+```
 
 ## Security note
 
-This is a development runner for the grading model, not the final hostile-code isolation boundary. Production execution should move into dedicated CyberRange ECS grading tasks with no host mounts, Docker socket, AWS credentials, or unnecessary network access.
+The standalone Docker runner is the development implementation of the grading model, not the final hostile-code isolation boundary. Production execution should move into dedicated CyberRange ECS grading tasks with no host mounts, Docker socket, AWS credentials, or unnecessary network access.

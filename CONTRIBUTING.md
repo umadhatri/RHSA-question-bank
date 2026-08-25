@@ -60,3 +60,13 @@ Never expose these to the student workspace:
 - expected data that reveals hidden cases.
 
 The standalone runner copies only temporary trusted setup code and the student's own submission into the execution container. Hidden grading runs outside the student container.
+
+## Setup variables
+
+Generated variables declared in `lab.yaml` are supplied to trusted `setup.sh` as environment variables. Student code does **not** automatically inherit these variables; pass only the values the student is supposed to receive through `execution.command` arguments.
+
+All random generators are seed-reproducible. Use `--seed` while debugging a grader so the exact hidden case can be replayed.
+
+## Module consistency
+
+`course.yaml` is the authoritative module catalog. A lab's `module:` field must match the module directory under which it is discovered, and lab IDs must be unique across the repository.

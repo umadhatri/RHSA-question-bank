@@ -4,13 +4,15 @@ title: Question Title
 version: 1
 module: module-id
 difficulty: beginner
+learning_objectives:
+  - Replace this with a measurable learning objective.
 
 submission:
   filename: answer.sh
   interpreter: bash
 
 environment:
-  image: cyberrange/rhsa-base:0.2
+  image: cyberrange/rhsa-base:0.3
   build_context: docker/base
   timeout_seconds: 15
   memory: 512m

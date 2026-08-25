@@ -52,6 +52,19 @@ class RootfsSnapshot:
         member = self._members.get(self._normalize(path))
         return bool(member and member.isdir())
 
+    def is_file(self, path: str) -> bool:
+        member = self._members.get(self._normalize(path))
+        return bool(member and member.isfile())
+
+    def paths_under(self, path: str) -> tuple[str, ...]:
+        """Return normalized snapshot paths strictly below *path*."""
+        base = self._normalize(path).rstrip("/")
+        prefix = f"{base}/" if base else ""
+        return tuple(
+            f"/{name}" for name in sorted(self._members)
+            if name.startswith(prefix) and name != base
+        )
+
     def mode(self, path: str) -> int | None:
         member = self._members.get(self._normalize(path))
         return member.mode if member else None

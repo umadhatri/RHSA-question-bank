@@ -29,7 +29,7 @@ from grader.validation import (  # noqa: E402
     validate_lab_config,
 )
 
-RUNNER_VERSION = "0.2.0"
+RUNNER_VERSION = "0.3.0"
 RESULT_CONTRACT_VERSION = 1
 LAB_SCHEMA = REPO_ROOT / "schemas" / "lab.schema.json"
 
@@ -147,7 +147,21 @@ def generate_variables(specs: dict[str, Any], seed: int) -> dict[str, str]:
         elif kind == "random_group":
             variables[name] = f"team_{rng.randrange(100000, 999999)}"
         elif kind == "random_token":
-            variables[name] = secrets.token_hex(6)
+            # Deliberately seed-derived so --seed fully reproduces a grading attempt.
+            variables[name] = f"{rng.getrandbits(48):012x}"
+        elif kind == "random_ipv4":
+            # Documentation-only TEST-NET-3 range (RFC 5737); never a real public target.
+            host_min = max(1, int((spec or {}).get("min", 1)))
+            host_max = min(254, int((spec or {}).get("max", 254)))
+            if host_min > host_max:
+                raise RunnerError(f"random_ipv4 min cannot exceed max for {name}")
+            variables[name] = f"203.0.113.{rng.randint(host_min, host_max)}"
+        elif kind == "random_int":
+            minimum = int((spec or {}).get("min", 1))
+            maximum = int((spec or {}).get("max", 100))
+            if minimum > maximum:
+                raise RunnerError(f"random_int min cannot exceed max for {name}")
+            variables[name] = str(rng.randint(minimum, maximum))
         elif kind == "literal":
             variables[name] = str((spec or {}).get("value", ""))
         else:
@@ -326,7 +340,15 @@ def main() -> int:
 
         # Trusted setup is present only during setup and removed before student code runs.
         run_cmd(["docker", "cp", str(setup_script), f"{container}:/tmp/lab-setup.sh"], check=True)
-        setup_result = docker_exec(container, ["bash", "/tmp/lab-setup.sh"], timeout=timeout)
+        # Setup receives generated values as environment variables. They are not
+        # exported into the later student process unless the lab explicitly passes
+        # them as command-line arguments via execution.command.
+        setup_env = [f"{key}={value}" for key, value in variables.items()]
+        setup_result = docker_exec(
+            container,
+            ["env", *setup_env, "bash", "/tmp/lab-setup.sh"],
+            timeout=timeout,
+        )
         context["setup"] = setup_result
         if setup_result["returncode"] != 0:
             raise RunnerError(

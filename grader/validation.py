@@ -48,6 +48,16 @@ def validate_lab_config(lab: dict[str, Any], schema_path: Path) -> None:
     if pass_score > declared_total:
         raise ValidationError("grading.pass_score cannot exceed grading.total_points")
 
+    for name, spec in lab.get("variables", {}).items():
+        kind = spec.get("type")
+        if kind in {"random_int", "random_ipv4"}:
+            minimum = int(spec.get("min", 1))
+            maximum = int(spec.get("max", 100 if kind == "random_int" else 254))
+            if minimum > maximum:
+                raise ValidationError(f"variables.{name}: min cannot exceed max")
+            if kind == "random_ipv4" and (minimum < 1 or maximum > 254):
+                raise ValidationError(f"variables.{name}: random_ipv4 host range must be within 1..254")
+
 
 def validate_grader_signature(grade_fn: Any) -> None:
     signature = inspect.signature(grade_fn)

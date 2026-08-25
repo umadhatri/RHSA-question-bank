@@ -1,0 +1,60 @@
+contract_version: 1
+id: RHSA-SHELL-001
+title: File Organizer
+version: 1
+module: shell-basics
+difficulty: beginner
+learning_objectives:
+  - Use positional parameters and conditional tests in Bash.
+  - Iterate safely over regular files, including hidden files.
+  - Classify files by extension and move them into directories.
+  - Handle empty input sets without failing.
+  - Write filesystem automation that is safe to run repeatedly.
+
+submission:
+  filename: organize_files.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - /submission/organize_files.sh
+    - "/workspace/source_${TEST_TOKEN}"
+    - "/workspace/destination_${TEST_TOKEN}"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: category_directories
+      points: 15
+    - id: text_files
+      points: 15
+    - id: log_files
+      points: 15
+    - id: other_files
+      points: 20
+    - id: source_cleared
+      points: 10
+    - id: source_directories_preserved
+      points: 5
+    - id: idempotency
+      points: 10

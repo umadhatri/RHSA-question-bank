@@ -1,0 +1,66 @@
+contract_version: 1
+id: RHSA-FILE-001
+title: Secure Shared Project Directory
+version: 1
+module: files-permissions
+difficulty: beginner
+learning_objectives:
+  - Apply Unix group ownership to shared files and directories.
+  - Configure numeric permission modes and the setgid directory bit.
+  - Preserve existing file contents while correcting metadata.
+  - Create predictable directory structures from positional arguments.
+  - Write permission-management automation that is safe to rerun.
+
+submission:
+  filename: secure_project.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+  README_PRESENT:
+    type: random_int
+    min: 0
+    max: 1
+
+execution:
+  command:
+    - bash
+    - /submission/secure_project.sh
+    - "/srv/project_${TEST_TOKEN}"
+    - "proj_${TEST_TOKEN}"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: project_group
+      points: 15
+    - id: project_mode
+      points: 15
+    - id: readme_integrity
+      points: 10
+    - id: readme_group
+      points: 10
+    - id: readme_mode
+      points: 10
+    - id: archive_directory
+      points: 10
+    - id: archive_policy
+      points: 10
+    - id: idempotency
+      points: 10

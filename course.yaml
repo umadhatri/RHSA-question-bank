@@ -1,10 +1,22 @@
 contract_version: 1
 id: RHSA-BASH-LABS
 title: Linux System Administration Bash Labs
-version: 0.2.0
+version: 0.3.0
 platform: CyberRange
 execution_model: disposable-container
 modules:
+  - id: shell-basics
+    title: Shell Basics and File Automation
+    path: labs/01-shell-basics
+  - id: files-permissions
+    title: Files, Ownership, and Permissions
+    path: labs/02-files-permissions
   - id: users-groups
     title: Users and Groups
-    path: labs/01-users-groups
+    path: labs/03-users-groups
+  - id: text-processing
+    title: Text Processing and Log Analysis
+    path: labs/04-text-processing
+  - id: archives-backups
+    title: Archives and Backups
+    path: labs/05-archives-backups

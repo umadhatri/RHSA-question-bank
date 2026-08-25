@@ -7,6 +7,10 @@ RUN dnf -y install --allowerasing \
       coreutils \
       findutils \
       grep \
+      gawk \
+      sed \
+      tar \
+      gzip \
       procps-ng \
       shadow-utils \
       util-linux \

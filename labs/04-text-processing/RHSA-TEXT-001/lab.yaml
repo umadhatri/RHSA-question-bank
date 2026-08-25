@@ -1,0 +1,84 @@
+contract_version: 1
+id: RHSA-TEXT-001
+title: Failed SSH Login Analyzer
+version: 1
+module: text-processing
+difficulty: beginner
+learning_objectives:
+  - Extract structured information from Linux-style log files.
+  - Use grep, awk, sort, uniq, loops, or equivalent shell tools effectively.
+  - Count repeated events and produce deterministic reports.
+  - Separate relevant failure events from unrelated log noise.
+  - Overwrite generated reports safely on repeated execution.
+
+submission:
+  filename: analyze_auth.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+  IP_A:
+    type: random_ipv4
+    min: 10
+    max: 60
+  IP_B:
+    type: random_ipv4
+    min: 80
+    max: 130
+  IP_C:
+    type: random_ipv4
+    min: 160
+    max: 220
+  COUNT_A:
+    type: random_int
+    min: 7
+    max: 9
+  COUNT_B:
+    type: random_int
+    min: 4
+    max: 6
+  COUNT_C:
+    type: random_int
+    min: 1
+    max: 3
+
+execution:
+  command:
+    - bash
+    - /submission/analyze_auth.sh
+    - "/var/log/training/auth_${TEST_TOKEN}.log"
+    - "/workspace/failed_logins_${TEST_TOKEN}.txt"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: output_created
+      points: 10
+    - id: output_format
+      points: 10
+    - id: ip_set
+      points: 15
+    - id: counts
+      points: 25
+    - id: descending_order
+      points: 15
+    - id: no_duplicates
+      points: 5
+    - id: idempotency
+      points: 10

@@ -1,0 +1,61 @@
+contract_version: 1
+id: RHSA-BACKUP-001
+title: Automated Compressed Backup
+version: 1
+module: archives-backups
+difficulty: beginner
+learning_objectives:
+  - Create gzip-compressed tar archives from Bash.
+  - Preserve a directory tree and hidden files inside an archive.
+  - Work with source, destination, and output-name arguments safely.
+  - Produce deterministic backup artifacts without embedding absolute paths.
+  - Make backup automation safe to rerun.
+
+submission:
+  filename: create_backup.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - /submission/create_backup.sh
+    - "/opt/training/source_${TEST_TOKEN}"
+    - "/var/backups/training_${TEST_TOKEN}"
+    - "backup_${TEST_TOKEN}.tar.gz"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: destination_created
+      points: 10
+    - id: archive_created
+      points: 10
+    - id: valid_gzip_tar
+      points: 10
+    - id: required_entries
+      points: 20
+    - id: file_contents
+      points: 20
+    - id: no_extra_entries
+      points: 10
+    - id: idempotency
+      points: 10
