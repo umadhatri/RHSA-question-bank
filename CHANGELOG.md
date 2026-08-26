@@ -1,3 +1,11 @@
+# v0.4.0 — Trusted grading-worker foundation
+
+- Added `cyberrange/rhsa-grading-worker:0.4.0`.
+- Added a worker entry point that normalizes academic PASS/FAIL into successful grading jobs.
+- Added Git-revision image tagging for reproducibility.
+- Added worker isolation checks and an end-to-end worker smoke test.
+- Added worker unit tests and production security documentation.
+
 # Changelog
 
 ## 0.3.0 — First question-bank release

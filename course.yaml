@@ -1,7 +1,7 @@
 contract_version: 1
 id: RHSA-BASH-LABS
 title: Linux System Administration Bash Labs
-version: 0.3.0
+version: 0.4.0
 platform: CyberRange
 execution_model: disposable-container
 modules:

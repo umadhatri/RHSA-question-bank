@@ -76,6 +76,17 @@ python3 grader/runner.py \
   --json-out result.json
 ```
 
+## Trusted grading worker
+
+The question bank also builds a trusted worker image that preserves the hidden-grader isolation model when grading is moved off a developer machine:
+
+```bash
+./scripts/build-worker.sh
+./scripts/smoke-worker.sh
+```
+
+The worker image is `cyberrange/rhsa-grading-worker:0.4.0`. It contains the private graders and launches the existing `cyberrange/rhsa-base:0.3` image as the untrusted student sandbox. See `docs/GRADING_WORKER.md` for the security boundary and production constraints.
+
 ## Repository layout
 
 ```text

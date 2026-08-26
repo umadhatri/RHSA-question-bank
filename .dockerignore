@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.tar
+*.zip
+examples/
+tests/
+templates/
+docs/
+labs/**/reference/
