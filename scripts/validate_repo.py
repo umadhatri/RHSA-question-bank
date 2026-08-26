@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 from grader.validation import (  # noqa: E402
     ValidationError,
+    discover_lab_id_locations,
     load_yaml,
     validate_grader_signature,
     validate_lab_config,
@@ -65,6 +66,28 @@ def main() -> int:
     discovered: list[tuple[Path, str]] = []
     failures = 0
 
+    # Scan the whole labs tree before following course.yaml. This catches stale
+    # copies in old/unlisted module directories instead of silently ignoring them.
+    all_locations = discover_lab_id_locations(ROOT / "labs")
+    for lab_id, paths in sorted(all_locations.items()):
+        if len(paths) > 1:
+            failures += 1
+            print(f"[FAIL] duplicate lab id: {lab_id}")
+            for path in paths:
+                print(f"       - {path.relative_to(ROOT)}")
+
+    configured_module_paths = {
+        (ROOT / module["path"]).resolve() for module in course.get("modules", [])
+    }
+    for lab_paths in all_locations.values():
+        for lab_path in lab_paths:
+            if lab_path.parent.resolve() not in configured_module_paths:
+                failures += 1
+                print(
+                    f"[FAIL] unlisted lab module: {lab_path.relative_to(ROOT)} "
+                    "is not under a course.yaml module path"
+                )
+
     for module in course.get("modules", []):
         module_path = ROOT / module["path"]
         if not module_path.is_dir():
@@ -79,7 +102,6 @@ def main() -> int:
         print("[FAIL] no lab questions discovered")
         return 1
 
-    seen_ids: set[str] = set()
     for lab_dir, module_id in discovered:
         errors = validate_lab_dir(lab_dir)
         if not errors:
@@ -88,9 +110,6 @@ def main() -> int:
                 errors.append(
                     f"lab module {lab.get('module')!r} does not match course module {module_id!r}"
                 )
-            if lab["id"] in seen_ids:
-                errors.append(f"duplicate lab id: {lab['id']}")
-            seen_ids.add(lab["id"])
         if errors:
             failures += 1
             print(f"[FAIL] {lab_dir.name}")

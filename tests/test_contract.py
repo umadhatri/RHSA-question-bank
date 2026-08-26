@@ -11,7 +11,7 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from grader.api import GradeBook, RootfsSnapshot, SnapshotSet
-from grader.validation import validate_grader_signature, validate_lab_config
+from grader.validation import discover_lab_id_locations, validate_grader_signature, validate_lab_config
 
 ROOT = Path(__file__).resolve().parents[1]
 LAB_DIR = ROOT / "labs" / "03-users-groups" / "RHSA-USERS-001"
@@ -110,6 +110,20 @@ class ContractTests(unittest.TestCase):
         book.check("a", False, "ok", "bad")
         result = book.finalize()
         self.assertEqual([x["id"] for x in result["tests"]], ["a", "b"])
+
+
+    def test_duplicate_lab_discovery_includes_unlisted_modules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            labs = Path(tmp) / "labs"
+            first = labs / "03-users-groups" / "RHSA-USERS-001"
+            stale = labs / "01-users-groups" / "RHSA-USERS-001"
+            first.mkdir(parents=True)
+            stale.mkdir(parents=True)
+            payload = "id: RHSA-USERS-001\n"
+            (first / "lab.yaml").write_text(payload, encoding="utf-8")
+            (stale / "lab.yaml").write_text(payload, encoding="utf-8")
+            locations = discover_lab_id_locations(labs)
+            self.assertEqual(len(locations["RHSA-USERS-001"]), 2)
 
 
 if __name__ == "__main__":

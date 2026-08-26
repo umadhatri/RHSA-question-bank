@@ -67,3 +67,20 @@ def validate_grader_signature(grade_fn: Any) -> None:
             "grader.py grade() must use the contract-v1 signature: "
             "grade(lab, context, snapshots)"
         )
+
+
+def discover_lab_id_locations(labs_root: Path) -> dict[str, list[Path]]:
+    """Return every declared lab ID under labs/*/*, including unlisted modules."""
+    locations: dict[str, list[Path]] = {}
+    if not labs_root.is_dir():
+        return locations
+    for lab_yaml in sorted(labs_root.glob("*/*/lab.yaml")):
+        try:
+            data = load_yaml(lab_yaml)
+            lab_id = str(data.get("id") or lab_yaml.parent.name)
+        except Exception:
+            # Normal per-lab validation will report malformed YAML. Falling back
+            # to the directory name still lets us detect obvious stale copies.
+            lab_id = lab_yaml.parent.name
+        locations.setdefault(lab_id, []).append(lab_yaml.parent)
+    return locations
