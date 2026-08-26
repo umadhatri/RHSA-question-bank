@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BASE_IMAGE="cyberrange/rhsa-base:0.3"
-WORKER_VERSION="${RHSA_WORKER_VERSION:-0.4.0}"
+WORKER_VERSION="${RHSA_WORKER_VERSION:-0.4.1}"
 WORKER_IMAGE="cyberrange/rhsa-grading-worker:${WORKER_VERSION}"
 DOCKER_SOCKET="${DOCKER_SOCKET:-/var/run/docker.sock}"
 SEED="${RHSA_SMOKE_SEED:-424242}"
@@ -71,12 +71,12 @@ bad = json.loads(Path(sys.argv[2]).read_text())
 assert good["score"] == 100, good
 assert good["max_score"] == 100, good
 assert good["passed"] is True, good
-assert good["metadata"]["worker"]["version"] == "0.1.0", good
+assert good["metadata"]["worker"]["version"] == "0.2.0", good
 
 assert bad["score"] == 60, bad
 assert bad["max_score"] == 100, bad
 assert bad["passed"] is False, bad
-assert bad["metadata"]["worker"]["version"] == "0.1.0", bad
+assert bad["metadata"]["worker"]["version"] == "0.2.0", bad
 
 print("Worker result assertions passed.")
 PY

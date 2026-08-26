@@ -83,9 +83,10 @@ The question bank also builds a trusted worker image that preserves the hidden-g
 ```bash
 ./scripts/build-worker.sh
 ./scripts/smoke-worker.sh
+./scripts/smoke-worker-remote.sh
 ```
 
-The worker image is `cyberrange/rhsa-grading-worker:0.4.0`. It contains the private graders and launches the existing `cyberrange/rhsa-base:0.3` image as the untrusted student sandbox. See `docs/GRADING_WORKER.md` for the security boundary and production constraints.
+The worker image is `cyberrange/rhsa-grading-worker:0.4.1`. It contains the private graders and launches `cyberrange/rhsa-base:0.3` (or a production ECR image override) as the untrusted student sandbox. v0.4.1 adds the ECS-facing remote job contract: short-lived HTTP(S) submission download, HTTP(S) result upload, and private-ECR sandbox pulls. See `docs/GRADING_WORKER.md`.
 
 ## Repository layout
 
@@ -104,4 +105,4 @@ linux-sysadmin-autograder/
 
 ## Security note
 
-The standalone Docker runner is the development implementation of the grading model, not the final hostile-code isolation boundary. Production execution should move into dedicated CyberRange ECS grading tasks with no host mounts, Docker socket, AWS credentials, or unnecessary network access.
+The standalone Docker runner is the development implementation of the grading model. Production uses a trusted worker only on dedicated grading capacity. That trusted worker may receive the grading host's Docker socket and a narrowly scoped ECS task role; the untrusted student sandbox receives neither, runs with `--network none`, and never contains the hidden question bank. The CyberRange application host must never expose its Docker socket to this worker.

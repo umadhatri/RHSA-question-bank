@@ -29,7 +29,7 @@ from grader.validation import (  # noqa: E402
     validate_lab_config,
 )
 
-RUNNER_VERSION = "0.3.0"
+RUNNER_VERSION = "0.4.0"
 RESULT_CONTRACT_VERSION = 1
 LAB_SCHEMA = REPO_ROOT / "schemas" / "lab.schema.json"
 
@@ -111,11 +111,15 @@ def image_id(image: str) -> str | None:
     return cp.stdout.strip() if cp.returncode == 0 else None
 
 
-def ensure_image(lab: dict[str, Any], auto_build: bool) -> str:
+def ensure_image(
+    lab: dict[str, Any],
+    auto_build: bool,
+    image_override: str | None = None,
+) -> str:
     env = lab.get("environment", {})
-    image = env.get("image")
+    image = image_override or env.get("image")
     if not image:
-        raise RunnerError("lab.yaml is missing environment.image")
+        raise RunnerError("lab.yaml is missing environment.image and no --image-override was supplied")
     if image_exists(image):
         return image
     if not auto_build:
@@ -259,6 +263,13 @@ def main() -> int:
         action="store_true",
         help="Build the configured Docker image automatically if it is missing",
     )
+    parser.add_argument(
+        "--image-override",
+        help=(
+            "Use this Docker image instead of environment.image from lab.yaml. "
+            "Production workers use this to select an immutable/private ECR sandbox image."
+        ),
+    )
     args = parser.parse_args()
 
     lab_dir = Path(args.lab).resolve()
@@ -278,7 +289,7 @@ def main() -> int:
         raise RunnerError(str(exc)) from exc
 
     require_docker()
-    image = ensure_image(lab, auto_build=args.build_image)
+    image = ensure_image(lab, auto_build=args.build_image, image_override=args.image_override)
 
     seed = args.seed if args.seed is not None else secrets.randbelow(2**31 - 1)
     variables = generate_variables(lab.get("variables", {}), seed)

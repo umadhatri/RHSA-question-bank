@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VERSION="${RHSA_WORKER_VERSION:-0.4.0}"
+VERSION="${RHSA_WORKER_VERSION:-0.4.1}"
 IMAGE="cyberrange/rhsa-grading-worker:${VERSION}"
 
 if ! command -v docker >/dev/null 2>&1; then

@@ -1,3 +1,12 @@
+# v0.4.1 — Remote grading-worker contract
+
+- Added HTTP(S) submission download and result upload for presigned-object workflows.
+- Added environment-variable job inputs suitable for ECS task overrides.
+- Added sandbox image override support to the generic runner.
+- Added private ECR sandbox authentication/pull support through a narrowly scoped ECS task role.
+- Added submission size limits and URL validation without logging signed URLs.
+- Added remote transport and image-override tests plus an end-to-end remote worker smoke test.
+
 # v0.4.0 — Trusted grading-worker foundation
 
 - Added `cyberrange/rhsa-grading-worker:0.4.0`.

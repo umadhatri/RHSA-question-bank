@@ -3,7 +3,9 @@ FROM docker:27-cli
 # The worker is trusted orchestration code. It needs Python for the private
 # graders and the Docker CLI to launch the untrusted rhsa-base sandbox.
 RUN apk add --no-cache \
+      aws-cli \
       bash \
+      ca-certificates \
       coreutils \
       findutils \
       python3 \
