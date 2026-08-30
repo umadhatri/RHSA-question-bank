@@ -1,0 +1,94 @@
+contract_version: 1
+id: RHSA-PROC-001
+title: Process Management and Priority
+version: 1
+module: process-management
+difficulty: intermediate
+
+learning_objectives:
+  - Inspect running Linux processes.
+  - Identify processes by command name.
+  - Terminate a specific process safely.
+  - Change the scheduling priority of an existing process.
+  - Avoid disrupting unrelated processes.
+  - Write idempotent process-management automation.
+
+submission:
+  filename: manage_processes.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.4
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      student_rc=0
+      bash /submission/manage_processes.sh || student_rc=$?
+
+      probe_process() {
+          local wanted="$1"
+          local output="$2"
+
+          : > "$output"
+
+          for procdir in /proc/[0-9]*; do
+              [[ -r "$procdir/comm" ]] || continue
+              [[ -r "$procdir/stat" ]] || continue
+
+              local comm=""
+              IFS= read -r comm < "$procdir/comm" || continue
+
+              [[ "$comm" == "$wanted" ]] || continue
+
+              local stat=""
+              IFS= read -r stat < "$procdir/stat" || continue
+
+              local fields=()
+              read -r -a fields <<< "$stat"
+
+              printf '%s %s %s\n' \
+                  "${fields[0]}" \
+                  "${fields[2]}" \
+                  "${fields[18]}" \
+                  >> "$output"
+          done
+      }
+
+      probe_process cr_runaway /run/cyberrange-runaway-state
+      probe_process cr_worker  /run/cyberrange-worker-state
+      probe_process cr_control /run/cyberrange-control-state
+
+      exit "$student_rc"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: runaway_terminated
+      points: 20
+    - id: worker_preserved
+      points: 15
+    - id: worker_priority
+      points: 20
+    - id: control_preserved
+      points: 15
+    - id: control_priority
+      points: 10
+    - id: no_extra_processes
+      points: 5
+    - id: idempotency
+      points: 5

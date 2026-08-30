@@ -1,7 +1,7 @@
 contract_version: 1
 id: RHSA-BASH-LABS
 title: Linux System Administration Bash Labs
-version: 0.5.0
+version: 0.6.0
 platform: CyberRange
 execution_model: disposable-container
 modules:
@@ -23,3 +23,6 @@ modules:
   - id: privileged-access
     title: Privileged Access and Sudo
     path: labs/06-privileged-access
+  - id: process-management
+    title: Process Management
+    path: labs/07-process-management
