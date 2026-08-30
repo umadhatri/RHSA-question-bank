@@ -1,0 +1,84 @@
+contract_version: 1
+id: RHSA-SUDO-001
+title: Scoped Privileged Access
+version: 1
+module: privileged-access
+difficulty: intermediate
+
+learning_objectives:
+  - Configure delegated administrative access with sudo.
+  - Use a dedicated sudoers drop-in under /etc/sudoers.d.
+  - Apply secure ownership and permissions to sudoers policy files.
+  - Validate sudo configuration with visudo.
+  - Apply least privilege instead of unrestricted administrative access.
+  - Write idempotent system-administration automation.
+
+submission:
+  filename: configure_sudo.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.4
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_USERNAME:
+    type: random_username
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      student_rc=0
+      bash /submission/configure_sudo.sh "$1" || student_rc=$?
+
+      visudo -cf /etc/sudoers \
+        >/run/cyberrange-visudo.txt 2>&1
+      printf '%s\n' "$?" \
+        >/run/cyberrange-visudo.rc
+
+      sudo -l -U "$1" \
+        >/run/cyberrange-sudo-list.txt 2>&1
+      printf '%s\n' "$?" \
+        >/run/cyberrange-sudo-list.rc
+
+      exit "$student_rc"
+    - cyberrange-sudo-probe
+    - "${TEST_USERNAME}"
+
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: dropin_exists
+      points: 10
+    - id: dropin_owner
+      points: 5
+    - id: dropin_permissions
+      points: 10
+    - id: visudo_valid
+      points: 10
+    - id: exact_delegation
+      points: 20
+    - id: no_broad_privilege
+      points: 15
+    - id: user_not_wheel
+      points: 5
+    - id: sudoers_preserved
+      points: 5
+    - id: helper_preserved
+      points: 5
+    - id: idempotency
+      points: 5

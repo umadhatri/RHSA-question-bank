@@ -14,6 +14,7 @@ RUN dnf -y install --allowerasing \
       procps-ng \
       shadow-utils \
       util-linux \
+      sudo \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
