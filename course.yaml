@@ -1,7 +1,7 @@
 contract_version: 1
 id: RHSA-BASH-LABS
 title: Linux System Administration Bash Labs
-version: 0.6.0
+version: 0.7.0
 platform: CyberRange
 execution_model: disposable-container
 modules:
@@ -26,3 +26,6 @@ modules:
   - id: process-management
     title: Process Management
     path: labs/07-process-management
+  - id: package-management
+    title: Package Management
+    path: labs/08-package-management

@@ -1,0 +1,83 @@
+contract_version: 1
+id: RHSA-PKG-001
+title: Local RPM Package Deployment
+version: 1
+module: package-management
+difficulty: intermediate
+
+learning_objectives:
+  - Inspect RPM package metadata.
+  - Install a local RPM package.
+  - Verify installed package state with the RPM database.
+  - Preserve package-managed files.
+  - Avoid modifying the supplied package artifact.
+  - Write idempotent package-management automation.
+
+submission:
+  filename: manage_package.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.5
+  build_context: docker/base
+  timeout_seconds: 20
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_VERSION:
+    type: random_int
+    min: 100
+    max: 999
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      student_rc=0
+      bash /submission/manage_package.sh "$1" || student_rc=$?
+
+      /usr/bin/rpm -q cyberrange-monitor \
+        --queryformat '%{NAME}|%{VERSION}|%{RELEASE}|%{ARCH}\n' \
+        >/run/cyberrange-installed-package.txt 2>&1
+      printf '%s\n' "$?" \
+        >/run/cyberrange-installed-package.rc
+
+      /usr/bin/rpm -V cyberrange-monitor \
+        >/run/cyberrange-rpm-verify.txt 2>&1
+      printf '%s\n' "$?" \
+        >/run/cyberrange-rpm-verify.rc
+
+      exit "$student_rc"
+    - cyberrange-package-probe
+    - /opt/cyberrange/packages/cyberrange-monitor.rpm
+
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: package_installed
+      points: 20
+    - id: exact_version
+      points: 10
+    - id: executable_preserved
+      points: 10
+    - id: config_preserved
+      points: 15
+    - id: rpm_verify_clean
+      points: 15
+    - id: source_rpm_preserved
+      points: 5
+    - id: rpm_tool_preserved
+      points: 5
+    - id: idempotency
+      points: 10

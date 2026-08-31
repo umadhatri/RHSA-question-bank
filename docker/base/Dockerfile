@@ -15,6 +15,7 @@ RUN dnf -y install --allowerasing \
       shadow-utils \
       util-linux \
       sudo \
+      rpm-build \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
