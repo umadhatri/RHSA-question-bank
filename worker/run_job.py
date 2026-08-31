@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-WORKER_VERSION = "0.2.0"
+WORKER_VERSION = os.environ.get("RHSA_WORKER_VERSION", "0.2.0").strip() or "0.2.0"
 DEFAULT_ROOT = Path(os.environ.get("QUESTION_BANK_ROOT", "/opt/question-bank"))
 DEFAULT_MAX_SUBMISSION_BYTES = 64 * 1024
 DEFAULT_HTTP_TIMEOUT_SECONDS = 30

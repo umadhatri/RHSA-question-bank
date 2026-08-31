@@ -21,14 +21,17 @@ COPY worker/ ./worker/
 COPY course.yaml ./course.yaml
 
 ARG QUESTION_BANK_REVISION=unknown
+ARG WORKER_VERSION=unknown
 ENV QUESTION_BANK_ROOT=/opt/question-bank \
     QUESTION_BANK_REVISION=${QUESTION_BANK_REVISION} \
+    RHSA_WORKER_VERSION=${WORKER_VERSION} \
     PYTHONUNBUFFERED=1 \
     DOCKER_HOST=unix:///var/run/docker.sock
 
 LABEL org.opencontainers.image.title="CyberRange RHSA Grading Worker" \
       org.opencontainers.image.description="Trusted grading worker for Linux sysadmin Bash labs" \
-      org.opencontainers.image.revision="${QUESTION_BANK_REVISION}"
+      org.opencontainers.image.revision="${QUESTION_BANK_REVISION}" \
+      org.opencontainers.image.version="${WORKER_VERSION}"
 
 # Reference answers are instructor conveniences and are intentionally excluded
 # from the runtime worker. Hidden grader.py files remain here, but never enter

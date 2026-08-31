@@ -17,6 +17,7 @@ echo "Building ${IMAGE} from question-bank revision ${REVISION} ..."
 docker build \
   -f "$ROOT/docker/worker/Dockerfile" \
   --build-arg "QUESTION_BANK_REVISION=${REVISION}" \
+  --build-arg "WORKER_VERSION=${VERSION}" \
   -t "$IMAGE" \
   -t "$REV_IMAGE" \
   "$ROOT"
