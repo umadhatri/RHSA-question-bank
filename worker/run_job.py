@@ -53,6 +53,91 @@ def resolve_lab(root: Path, lab_id: str) -> Path:
     return matches[0]
 
 
+def load_lab_image(lab_dir: Path) -> str:
+    lab_yaml = lab_dir / "lab.yaml"
+    try:
+        payload = yaml.safe_load(lab_yaml.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        raise WorkerError(f"Unable to read lab metadata: {lab_yaml}") from exc
+
+    environment = payload.get("environment")
+    if not isinstance(environment, dict):
+        raise WorkerError(
+            f"Lab {lab_dir.name} is missing environment configuration."
+        )
+
+    image = str(environment.get("image") or "").strip()
+    if not image:
+        raise WorkerError(
+            f"Lab {lab_dir.name} is missing environment.image."
+        )
+
+    return image
+
+
+def parse_base_image_map(value: str | None) -> dict[str, str]:
+    if not value:
+        return {}
+
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise WorkerError("RHSA base-image map is not valid JSON.") from exc
+
+    if not isinstance(payload, dict):
+        raise WorkerError("RHSA base-image map must be a JSON object.")
+
+    result: dict[str, str] = {}
+
+    for raw_key, raw_value in payload.items():
+        if not isinstance(raw_key, str) or not raw_key.strip():
+            raise WorkerError(
+                "RHSA base-image map contains an invalid image key."
+            )
+        if not isinstance(raw_value, str) or not raw_value.strip():
+            raise WorkerError(
+                f"RHSA base-image map entry {raw_key!r} has an invalid value."
+            )
+
+        result[raw_key.strip()] = raw_value.strip()
+
+    return result
+
+
+def resolve_base_image(
+    lab_dir: Path,
+    *,
+    explicit_image: str | None,
+    image_map_json: str | None,
+) -> tuple[str | None, str]:
+    """
+    Resolve the sandbox image used by the worker.
+
+    An explicit --base-image remains the highest-priority development/
+    compatibility override. Otherwise, when an immutable image map is
+    configured, resolve the lab's logical environment.image through that map.
+    With no override and no map, allow grader/runner.py to use lab.yaml
+    directly as it does for local development.
+    """
+    if explicit_image:
+        return explicit_image, "explicit"
+
+    image_map = parse_base_image_map(image_map_json)
+    if not image_map:
+        return None, "lab-config"
+
+    configured_image = load_lab_image(lab_dir)
+    resolved = image_map.get(configured_image)
+
+    if not resolved:
+        raise WorkerError(
+            "No immutable sandbox image mapping is configured for "
+            f"{configured_image!r} required by {lab_dir.name}."
+        )
+
+    return resolved, "image-map"
+
+
 def tail(value: str | None, limit: int = 16000) -> str:
     return (value or "")[-limit:]
 
@@ -339,7 +424,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--base-image",
         default=os.environ.get("RHSA_BASE_IMAGE"),
-        help="Optional sandbox image override, normally an immutable/private ECR URI.",
+        help="Optional global sandbox image override for development/backward compatibility.",
+    )
+    parser.add_argument(
+        "--base-image-map-json",
+        default=os.environ.get("RHSA_BASE_IMAGE_MAP_JSON"),
+        help=(
+            "Optional JSON map from lab.yaml environment.image values "
+            "to immutable production sandbox image URIs."
+        ),
     )
     parser.add_argument(
         "--pull-base-image",
@@ -383,6 +476,12 @@ def main() -> int:
 
         lab_dir = resolve_lab(root, args.lab_id)
 
+        base_image, base_image_source = resolve_base_image(
+            lab_dir,
+            explicit_image=args.base_image,
+            image_map_json=args.base_image_map_json,
+        )
+
         with tempfile.TemporaryDirectory(prefix="rhsa-worker-job-") as tmp:
             tmpdir = Path(tmp)
             if args.submission:
@@ -399,11 +498,13 @@ def main() -> int:
                 )
 
             sandbox_info: dict[str, Any] | None = None
-            if args.base_image:
+            if base_image:
                 sandbox_info = prepare_base_image(
-                    args.base_image,
+                    base_image,
                     pull=args.pull_base_image,
                 )
+                sandbox_info["source"] = base_image_source
+                sandbox_info["configured"] = load_lab_image(lab_dir)
 
             internal_result = tmpdir / "result.json"
             command = [
@@ -418,8 +519,8 @@ def main() -> int:
             ]
             if args.seed is not None:
                 command.extend(["--seed", str(args.seed)])
-            if args.base_image:
-                command.extend(["--image-override", args.base_image])
+            if base_image:
+                command.extend(["--image-override", base_image])
 
             completed = subprocess.run(command, text=True, capture_output=True)
 

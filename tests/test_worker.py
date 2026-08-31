@@ -11,6 +11,8 @@ from worker.run_job import (
     WorkerError,
     download_submission,
     ecr_registry_region,
+    parse_base_image_map,
+    resolve_base_image,
     resolve_lab,
     upload_result,
 )
@@ -66,6 +68,134 @@ class GradingWorkerTests(unittest.TestCase):
                 )
             with self.assertRaises(WorkerError):
                 resolve_lab(root, "RHSA-DUP-001")
+
+    def test_resolves_lab_image_through_immutable_map(self):
+        lab = resolve_lab(ROOT, "RHSA-SUDO-001")
+        logical = "cyberrange/rhsa-base:0.4"
+        immutable = (
+            "766363046973.dkr.ecr.ap-south-1.amazonaws.com/"
+            "cyberrange/rhsa-base@sha256:"
+            "14482ef29550d70e12f4e2632ba7029911de10df33ca918f09042281a5557e47"
+        )
+
+        resolved, source = resolve_base_image(
+            lab,
+            explicit_image=None,
+            image_map_json=json.dumps({logical: immutable}),
+        )
+
+        self.assertEqual(resolved, immutable)
+        self.assertEqual(source, "image-map")
+
+    def test_explicit_base_image_wins_over_image_map(self):
+        lab = resolve_lab(ROOT, "RHSA-SUDO-001")
+
+        resolved, source = resolve_base_image(
+            lab,
+            explicit_image="cyberrange/test-base:explicit",
+            image_map_json=json.dumps(
+                {
+                    "cyberrange/rhsa-base:0.4":
+                        "cyberrange/test-base:mapped"
+                }
+            ),
+        )
+
+        self.assertEqual(
+            resolved,
+            "cyberrange/test-base:explicit",
+        )
+        self.assertEqual(source, "explicit")
+
+    def test_without_override_or_map_runner_uses_lab_config(self):
+        lab = resolve_lab(ROOT, "RHSA-SUDO-001")
+
+        resolved, source = resolve_base_image(
+            lab,
+            explicit_image=None,
+            image_map_json=None,
+        )
+
+        self.assertIsNone(resolved)
+        self.assertEqual(source, "lab-config")
+
+    def test_missing_immutable_image_mapping_fails_closed(self):
+        lab = resolve_lab(ROOT, "RHSA-SCHED-001")
+
+        with self.assertRaises(WorkerError):
+            resolve_base_image(
+                lab,
+                explicit_image=None,
+                image_map_json=json.dumps(
+                    {
+                        "cyberrange/rhsa-base:0.3":
+                            "example.invalid/base@sha256:abc"
+                    }
+                ),
+            )
+
+    def test_malformed_image_map_is_rejected(self):
+        with self.assertRaises(WorkerError):
+            parse_base_image_map("{not-json")
+
+        with self.assertRaises(WorkerError):
+            parse_base_image_map('["not", "an", "object"]')
+
+    def test_all_production_lab_images_can_be_mapped(self):
+        image_map = {
+            "cyberrange/rhsa-base:0.3": (
+                "766363046973.dkr.ecr.ap-south-1.amazonaws.com/"
+                "cyberrange/rhsa-base@sha256:"
+                "0f59aef8f7f19ee5c7215b70e65d019e02e7205c2238627376ae859fd2658a1f"
+            ),
+            "cyberrange/rhsa-base:0.4": (
+                "766363046973.dkr.ecr.ap-south-1.amazonaws.com/"
+                "cyberrange/rhsa-base@sha256:"
+                "14482ef29550d70e12f4e2632ba7029911de10df33ca918f09042281a5557e47"
+            ),
+            "cyberrange/rhsa-base:0.5": (
+                "766363046973.dkr.ecr.ap-south-1.amazonaws.com/"
+                "cyberrange/rhsa-base@sha256:"
+                "c643f41705aa6bd552c9537821da3f62095082d788c8ef87986755eace618c26"
+            ),
+            "cyberrange/rhsa-base:0.6": (
+                "766363046973.dkr.ecr.ap-south-1.amazonaws.com/"
+                "cyberrange/rhsa-base@sha256:"
+                "8ea6da64bc13b2eaa33468fd53dfa54ae089cd8c3b6213bdc7cf5e35e5b3378d"
+            ),
+            "cyberrange/rhsa-base:0.7": (
+                "766363046973.dkr.ecr.ap-south-1.amazonaws.com/"
+                "cyberrange/rhsa-base@sha256:"
+                "680a15fdc0b2978b90b2a5fc55615ed9114a2879532ad74907363984f17d6e60"
+            ),
+        }
+
+        lab_ids = (
+            "RHSA-SHELL-001",
+            "RHSA-FILE-001",
+            "RHSA-USERS-001",
+            "RHSA-TEXT-001",
+            "RHSA-BACKUP-001",
+            "RHSA-SUDO-001",
+            "RHSA-PROC-001",
+            "RHSA-PKG-001",
+            "RHSA-SSH-001",
+            "RHSA-SCHED-001",
+        )
+
+        encoded = json.dumps(image_map)
+
+        for lab_id in lab_ids:
+            with self.subTest(lab_id=lab_id):
+                lab = resolve_lab(ROOT, lab_id)
+                resolved, source = resolve_base_image(
+                    lab,
+                    explicit_image=None,
+                    image_map_json=encoded,
+                )
+
+                self.assertIn("@sha256:", resolved)
+                self.assertEqual(source, "image-map")
 
     def test_remote_http_submission_and_result_transport(self):
         _ObjectStoreHandler.uploaded = None
