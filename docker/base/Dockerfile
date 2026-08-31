@@ -16,6 +16,8 @@ RUN dnf -y install --allowerasing \
       util-linux \
       sudo \
       rpm-build \
+      openssh-clients \
+      openssh-server \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 

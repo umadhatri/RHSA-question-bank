@@ -1,0 +1,72 @@
+contract_version: 1
+id: RHSA-SSH-001
+title: SSH Public Key Provisioning
+version: 1
+module: ssh-access
+difficulty: intermediate
+
+learning_objectives:
+  - Configure SSH public-key access for an existing user.
+  - Manage authorized_keys without destroying existing access.
+  - Apply secure ownership and permissions to SSH files.
+  - Preserve global SSH daemon configuration.
+  - Write idempotent SSH access automation.
+
+submission:
+  filename: configure_ssh_key.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.6
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_USERNAME:
+    type: random_username
+
+execution:
+  command:
+    - bash
+    - /submission/configure_ssh_key.sh
+    - "${TEST_USERNAME}"
+    - /opt/cyberrange/keys/access_key.pub
+
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 3
+    - id: first_run_exit
+      points: 3
+    - id: user_preserved
+      points: 5
+    - id: ssh_directory
+      points: 3
+    - id: authorized_keys_file
+      points: 3
+    - id: ownership
+      points: 8
+    - id: permissions
+      points: 8
+    - id: existing_key_preserved
+      points: 15
+    - id: supplied_key_installed
+      points: 7
+    - id: no_extra_keys
+      points: 5
+    - id: source_key_preserved
+      points: 5
+    - id: global_config_preserved
+      points: 5
+    - id: secure_access_state
+      points: 20
+    - id: idempotency
+      points: 10
