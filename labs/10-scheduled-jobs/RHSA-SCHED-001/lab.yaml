@@ -1,0 +1,82 @@
+contract_version: 1
+id: RHSA-SCHED-001
+title: Scheduled Maintenance
+version: 1
+module: scheduled-jobs
+difficulty: intermediate
+
+learning_objectives:
+  - Configure persistent system cron jobs.
+  - Interpret cron minute and hour fields.
+  - Run a scheduled command as a specific user.
+  - Preserve unrelated scheduled tasks.
+  - Apply secure ownership and permissions to cron configuration.
+  - Write idempotent scheduling automation.
+
+submission:
+  filename: configure_schedule.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.7
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_USERNAME:
+    type: random_username
+  TEST_HOUR:
+    type: random_int
+    min: 0
+    max: 23
+  TEST_MINUTE:
+    type: random_int
+    min: 0
+    max: 59
+
+execution:
+  command:
+    - bash
+    - /submission/configure_schedule.sh
+    - "${TEST_USERNAME}"
+    - "${TEST_HOUR}"
+    - "${TEST_MINUTE}"
+
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 2
+    - id: first_run_exit
+      points: 2
+    - id: user_preserved
+      points: 5
+    - id: cron_file_exists
+      points: 4
+    - id: ownership
+      points: 5
+    - id: permissions
+      points: 8
+    - id: existing_job_preserved
+      points: 15
+    - id: required_job_scheduled
+      points: 15
+    - id: no_extra_jobs
+      points: 5
+    - id: maintenance_preserved
+      points: 5
+    - id: weekly_helper_preserved
+      points: 2
+    - id: cron_scope_preserved
+      points: 2
+    - id: schedule_integrity
+      points: 20
+    - id: idempotency
+      points: 10

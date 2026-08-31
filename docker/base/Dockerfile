@@ -18,6 +18,7 @@ RUN dnf -y install --allowerasing \
       rpm-build \
       openssh-clients \
       openssh-server \
+      cronie \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 

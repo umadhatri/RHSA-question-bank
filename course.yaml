@@ -1,7 +1,7 @@
 contract_version: 1
 id: RHSA-BASH-LABS
 title: Linux System Administration Bash Labs
-version: 0.8.0
+version: 0.9.0
 platform: CyberRange
 execution_model: disposable-container
 modules:
@@ -32,3 +32,6 @@ modules:
   - id: ssh-access
     title: SSH Access
     path: labs/09-ssh-access
+  - id: scheduled-jobs
+    title: Scheduled Jobs
+    path: labs/10-scheduled-jobs
