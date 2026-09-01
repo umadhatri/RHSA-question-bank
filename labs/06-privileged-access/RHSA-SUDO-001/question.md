@@ -3,16 +3,18 @@
 Write a Bash script named `configure_sudo.sh`.
 
 Your script will be executed as:
-
-    bash configure_sudo.sh USERNAME
+```bash
+bash configure_sudo.sh USERNAME
+```
 
 `USERNAME` is chosen by the grading system at submission time. Do not hard-code a username.
 
 The specified user already exists.
 
 A root-owned maintenance command is already installed at:
-
-    /usr/local/sbin/cyberrange-maintenance
+```bash
+/usr/local/sbin/cyberrange-maintenance
+```
 
 ## Requirements
 
@@ -34,11 +36,11 @@ Your script must:
 Your solution must be a Bash script. All work should be performed from the terminal.
 
 ## Submission
-
-    submit configure_sudo.sh
+```bash
+submit configure_sudo.sh
+```
 
 For the standalone development runner:
-
-    python3 grader/runner.py \
-      --lab labs/06-privileged-access/RHSA-SUDO-001 \
-      --submission configure_sudo.sh
+```bash
+python3 grader/runner.py --lab labs/06-privileged-access/RHSA-SUDO-001 --submission configure_sudo.sh
+```

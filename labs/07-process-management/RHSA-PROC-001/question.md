@@ -27,10 +27,11 @@ Your solution must be a Bash script. All work should be performed from the termi
 
 ## Submission
 
-    submit manage_processes.sh
+```bash
+submit manage_processes.sh
+```
 
 For the standalone development runner:
-
-    python3 grader/runner.py \
-      --lab labs/07-process-management/RHSA-PROC-001 \
-      --submission manage_processes.sh
+```bash
+python3 grader/runner.py --lab labs/07-process-management/RHSA-PROC-001 --submission manage_processes.sh
+```

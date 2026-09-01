@@ -3,8 +3,9 @@
 Write a Bash script named `configure_ssh_key.sh`.
 
 Your script will be executed as:
-
-    bash configure_ssh_key.sh USERNAME PUBLIC_KEY_FILE
+```bash
+bash configure_ssh_key.sh USERNAME PUBLIC_KEY_FILE
+```
 
 `USERNAME` is chosen by the grading system.
 
@@ -35,11 +36,11 @@ Do not replace the existing `authorized_keys` contents.
 Your solution must be a Bash script. All work should be performed from the terminal.
 
 ## Submission
-
+```bash
     submit configure_ssh_key.sh
+```
 
 For the standalone development runner:
-
-    python3 grader/runner.py \
-      --lab labs/09-ssh-access/RHSA-SSH-001 \
-      --submission configure_ssh_key.sh
+```bash
+    python3 grader/runner.py --lab labs/09-ssh-access/RHSA-SSH-001 --submission configure_ssh_key.sh
+```

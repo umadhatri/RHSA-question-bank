@@ -3,16 +3,15 @@
 Write a Bash script named `configure_schedule.sh`.
 
 Your script will be executed as:
-
-    bash configure_schedule.sh USERNAME HOUR MINUTE
+```bash
+bash configure_schedule.sh USERNAME HOUR MINUTE
+```
 
 `USERNAME`, `HOUR`, and `MINUTE` are chosen by the grading system.
 
 The specified user already exists.
 
-A maintenance command is installed at:
-
-    /usr/local/sbin/cyberrange-maintenance
+A maintenance command is installed at: `/usr/local/sbin/cyberrange-maintenance`
 
 The cron configuration already contains an unrelated weekly audit job that must be preserved.
 
@@ -20,17 +19,11 @@ The cron configuration already contains an unrelated weekly audit job that must 
 
 Your script must:
 
-1. Configure the cron file:
-
-       /etc/cron.d/cyberrange-maintenance
-
+1. Configure the cron file: `/etc/cron.d/cyberrange-maintenance`
 2. Preserve the existing weekly audit job exactly.
 3. Add a daily job that runs at the supplied `HOUR` and `MINUTE`.
 4. Run the daily job as `USERNAME`.
-5. Execute exactly:
-
-       /usr/local/sbin/cyberrange-maintenance
-
+5. Execute exactly: `/usr/local/sbin/cyberrange-maintenance`
 6. Add the required daily job exactly once.
 7. Do not add any other jobs to the managed cron file.
 8. Set the cron file ownership to `root:root`.
@@ -43,11 +36,11 @@ Your script must:
 Your solution must be a Bash script. All work should be performed from the terminal.
 
 ## Submission
-
-    submit configure_schedule.sh
+```bash
+submit configure_schedule.sh
+```
 
 For the standalone development runner:
-
-    python3 grader/runner.py \
-      --lab labs/10-scheduled-jobs/RHSA-SCHED-001 \
-      --submission configure_schedule.sh
+```bash
+python3 grader/runner.py --lab labs/10-scheduled-jobs/RHSA-SCHED-001 --submission configure_schedule.sh
+```
