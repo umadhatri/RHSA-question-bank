@@ -1,0 +1,90 @@
+contract_version: 1
+id: TUPE-C03-005
+title: Argument Manifest Builder
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Use positional parameters to interpret command-line arguments.
+  - Distinguish fixed arguments from a variable-length argument list.
+  - Count and process all remaining arguments.
+  - Preserve the original argument order.
+  - Write a shell command that behaves correctly with different argument counts.
+
+submission:
+  filename: argument_manifest.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      short_output=$1
+      long_output=$2
+      short_label=$3
+      long_label=$4
+      item_a=$5
+      item_b=$6
+      item_c=$7
+      item_d=$8
+
+      bash /submission/argument_manifest.sh \
+        "$short_output" \
+        "$short_label" \
+        "$item_a" \
+        "$item_b"
+
+      bash /submission/argument_manifest.sh \
+        "$long_output" \
+        "$long_label" \
+        "$item_a" \
+        "$item_b" \
+        "$item_c" \
+        "$item_d"
+    - _
+    - "/workspace/short_manifest_${TEST_TOKEN}.txt"
+    - "/workspace/long_manifest_${TEST_TOKEN}.txt"
+    - "short-${TEST_TOKEN}"
+    - "long-${TEST_TOKEN}"
+    - "alpha-${TEST_TOKEN}"
+    - "beta-${TEST_TOKEN}"
+    - "gamma-${TEST_TOKEN}"
+    - "delta-${TEST_TOKEN}"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: outputs_created
+      points: 10
+    - id: short_manifest
+      points: 20
+    - id: long_manifest
+      points: 25
+    - id: labels_and_counts
+      points: 15
+    - id: argument_order
+      points: 10
+    - id: idempotency
+      points: 10
