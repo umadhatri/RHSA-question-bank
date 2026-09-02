@@ -1,0 +1,56 @@
+contract_version: 1
+id: TUPE-C03-001
+title: Pipeline Report Builder
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Combine the output of multiple commands into one processing stream.
+  - Filter command output through a Unix pipeline.
+  - Sort output and remove duplicate records.
+  - Redirect the final result to a file without accumulating stale output.
+  - Write a shell pipeline that behaves consistently when executed repeatedly.
+
+submission:
+  filename: pipeline_report.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - /submission/pipeline_report.sh
+    - "/workspace/error_report_${TEST_TOKEN}.txt"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 10
+    - id: output_created
+      points: 10
+    - id: error_filtering
+      points: 20
+    - id: both_sources
+      points: 20
+    - id: sorted_unique_report
+      points: 25
+    - id: idempotency
+      points: 10

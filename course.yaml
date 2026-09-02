@@ -35,3 +35,6 @@ modules:
   - id: scheduled-jobs
     title: Scheduled Jobs
     path: labs/10-scheduled-jobs
+  - id: unix-programming-environment
+    title: The Unix Programming Environment
+    path: labs/11-unix-programming-environment
