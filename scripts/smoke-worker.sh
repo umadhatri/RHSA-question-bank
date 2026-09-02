@@ -60,23 +60,24 @@ echo
 echo "=== Worker: intentionally broken submission ==="
 run_worker "$ROOT/examples/student_bad.sh" bad.json
 
-python3 - "$TMP/good.json" "$TMP/bad.json" <<'PY'
+python3 - "$TMP/good.json" "$TMP/bad.json" "$WORKER_VERSION" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 good = json.loads(Path(sys.argv[1]).read_text())
 bad = json.loads(Path(sys.argv[2]).read_text())
+expected_worker_version = sys.argv[3]
 
 assert good["score"] == 100, good
 assert good["max_score"] == 100, good
 assert good["passed"] is True, good
-assert good["metadata"]["worker"]["version"] == "0.2.0", good
+assert good["metadata"]["worker"]["version"] == expected_worker_version, good
 
 assert bad["score"] == 60, bad
 assert bad["max_score"] == 100, bad
 assert bad["passed"] is False, bad
-assert bad["metadata"]["worker"]["version"] == "0.2.0", bad
+assert bad["metadata"]["worker"]["version"] == expected_worker_version, bad
 
 print("Worker result assertions passed.")
 PY
