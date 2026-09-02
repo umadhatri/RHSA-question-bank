@@ -1,0 +1,58 @@
+contract_version: 1
+id: TUPE-C03-003
+title: Quoting and Literal Data
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Preserve positional arguments that contain spaces and shell metacharacters.
+  - Quote pathnames that contain spaces and wildcard characters.
+  - Distinguish literal metacharacters from shell expansion syntax.
+  - Safely access filenames containing dollar signs, asterisks, and question marks.
+  - Produce deterministic output without accidental word splitting or filename expansion.
+
+submission:
+  filename: quote_report.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - /submission/quote_report.sh
+    - "/workspace/quote lab ${TEST_TOKEN} *"
+    - "/workspace/quote report ${TEST_TOKEN} ?.txt"
+    - "Batch  ${TEST_TOKEN}  *  ?  semi;colon"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: output_created
+      points: 10
+    - id: label_preserved
+      points: 20
+    - id: special_file_values
+      points: 35
+    - id: exact_report
+      points: 15
+    - id: idempotency
+      points: 10
