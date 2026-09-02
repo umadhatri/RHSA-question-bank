@@ -1,0 +1,93 @@
+contract_version: 1
+id: TUPE-C03-004
+title: Personal Command Installer
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Create a reusable shell command as an executable file.
+  - Install a command into a designated personal bin directory.
+  - Use PATH to invoke a command by name from another working directory.
+  - Accept and process positional arguments in the installed command.
+  - Preserve source data and produce repeatable installation behavior.
+
+submission:
+  filename: install_recordcount.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+  COUNT_A:
+    type: random_int
+    min: 3
+    max: 8
+  COUNT_B:
+    type: random_int
+    min: 9
+    max: 15
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      bin_dir=$1
+      input_a=$2
+      input_b=$3
+      probe=$4
+      resolved=$5
+
+      bash /submission/install_recordcount.sh "$bin_dir"
+
+      cd /tmp
+      PATH="$bin_dir:/usr/local/bin:/usr/bin:/bin"
+      export PATH
+
+      command -v recordcount > "$resolved"
+
+      {
+        printf 'A='
+        recordcount "$input_a"
+        printf 'B='
+        recordcount "$input_b"
+      } > "$probe"
+    - _
+    - "/workspace/student_bin_${TEST_TOKEN}"
+    - "/workspace/data_a_${TEST_TOKEN}.txt"
+    - "/workspace/data_b_${TEST_TOKEN}.txt"
+    - "/workspace/command_probe_${TEST_TOKEN}.txt"
+    - "/workspace/resolved_command_${TEST_TOKEN}.txt"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: command_created
+      points: 10
+    - id: command_executable
+      points: 10
+    - id: path_resolution
+      points: 20
+    - id: argument_behavior
+      points: 25
+    - id: input_preserved
+      points: 10
+    - id: idempotency
+      points: 15
