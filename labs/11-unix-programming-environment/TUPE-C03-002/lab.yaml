@@ -1,0 +1,67 @@
+contract_version: 1
+id: TUPE-C03-002
+title: Filename Pattern Selector
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Match filenames using shell wildcard metacharacters.
+  - Distinguish between single-character and multi-character filename patterns.
+  - Use bracket expressions to restrict matched characters.
+  - Recognize the special treatment of leading-dot filenames in shell globbing.
+  - Produce deterministic output from filename selections.
+
+submission:
+  filename: select_patterns.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+  LOG_START:
+    type: random_int
+    min: 1
+    max: 7
+  REPORT_START:
+    type: random_int
+    min: 1
+    max: 7
+
+execution:
+  command:
+    - bash
+    - /submission/select_patterns.sh
+    - "/workspace/patterns_${TEST_TOKEN}"
+    - "/workspace/pattern_report_${TEST_TOKEN}.txt"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: output_created
+      points: 10
+    - id: single_char_logs
+      points: 20
+    - id: numbered_reports
+      points: 20
+    - id: backup_files
+      points: 20
+    - id: exact_report
+      points: 10
+    - id: idempotency
+      points: 10
