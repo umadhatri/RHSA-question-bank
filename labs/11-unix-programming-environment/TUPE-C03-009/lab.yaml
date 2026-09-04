@@ -1,0 +1,90 @@
+contract_version: 1
+id: TUPE-C03-009
+title: Here-Document Generator
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Generate a multi-line text document from a shell script.
+  - Substitute selected shell variables into generated text.
+  - Preserve shell metacharacters literally when they must not be expanded.
+  - Redirect generated text to a requested output file.
+  - Produce repeatable output without appending stale content.
+
+submission:
+  filename: make_notice.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+  BUILD_A:
+    type: random_int
+    min: 100
+    max: 499
+  BUILD_B:
+    type: random_int
+    min: 500
+    max: 999
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      output_a=$1
+      output_b=$2
+      project_a=$3
+      owner_a=$4
+      project_b=$5
+      owner_b=$6
+
+      bash /submission/make_notice.sh \
+        "$output_a" \
+        "$project_a" \
+        "$owner_a"
+
+      bash /submission/make_notice.sh \
+        "$output_b" \
+        "$project_b" \
+        "$owner_b"
+    - _
+    - "/workspace/notice_a_${TEST_TOKEN}.txt"
+    - "/workspace/notice_b_${TEST_TOKEN}.txt"
+    - "alpha-${TEST_TOKEN} build-${BUILD_A} [release] *"
+    - "Owner A ${TEST_TOKEN} $ops"
+    - "beta-${TEST_TOKEN} build-${BUILD_B} [release] *"
+    - "Owner B ${TEST_TOKEN} $ops"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: outputs_created
+      points: 10
+    - id: first_document
+      points: 20
+    - id: second_document
+      points: 20
+    - id: dynamic_fields
+      points: 15
+    - id: literal_shell_text
+      points: 10
+    - id: idempotency
+      points: 15

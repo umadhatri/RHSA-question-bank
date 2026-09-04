@@ -1,0 +1,90 @@
+contract_version: 1
+id: TUPE-C03-008
+title: Output Stream Router
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Distinguish standard output from standard error.
+  - Redirect file descriptor 1 and file descriptor 2 independently.
+  - Preserve the exact data emitted on each output stream.
+  - Accept executable paths and output paths as positional parameters.
+  - Produce repeatable output without modifying provided helper commands.
+
+submission:
+  filename: route_streams.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+  CODE_A:
+    type: random_int
+    min: 100
+    max: 499
+  CODE_B:
+    type: random_int
+    min: 500
+    max: 999
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      stdout_a=$1
+      stderr_a=$2
+      stdout_b=$3
+      stderr_b=$4
+      emitter_a=$5
+      emitter_b=$6
+
+      bash /submission/route_streams.sh \
+        "$stdout_a" \
+        "$stderr_a" \
+        "$emitter_a"
+
+      bash /submission/route_streams.sh \
+        "$stdout_b" \
+        "$stderr_b" \
+        "$emitter_b"
+    - _
+    - "/workspace/stdout_a_${TEST_TOKEN}.txt"
+    - "/workspace/stderr_a_${TEST_TOKEN}.txt"
+    - "/workspace/stdout_b_${TEST_TOKEN}.txt"
+    - "/workspace/stderr_b_${TEST_TOKEN}.txt"
+    - "/workspace/emitter_a_${TEST_TOKEN}"
+    - "/workspace/emitter_b_${TEST_TOKEN}"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: outputs_created
+      points: 10
+    - id: stdout_routing
+      points: 20
+    - id: stderr_routing
+      points: 20
+    - id: streams_separated
+      points: 15
+    - id: helpers_preserved
+      points: 10
+    - id: idempotency
+      points: 15

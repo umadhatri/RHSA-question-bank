@@ -1,0 +1,98 @@
+contract_version: 1
+id: TUPE-C03-007
+title: Environment and PATH Repair
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Assign shell variables and make selected variables available to child processes.
+  - Modify PATH while preserving the caller's existing search path.
+  - Control command-search precedence by prepending a directory to PATH.
+  - Export environment state before invoking another program.
+  - Produce repeatable output without modifying provided commands.
+
+submission:
+  filename: environment_runner.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      output_a=$1
+      output_b=$2
+      tool_a=$3
+      tool_b=$4
+      probe=$5
+      session_a=$6
+      session_b=$7
+      decoy_dir=$8
+      legacy_dir=$9
+
+      base_path="$decoy_dir:$legacy_dir:/usr/local/bin:/usr/bin:/bin"
+
+      PATH="$base_path"
+      export PATH
+      bash /submission/environment_runner.sh \
+        "$output_a" \
+        "$tool_a" \
+        "$probe" \
+        "$session_a"
+
+      PATH="$base_path"
+      export PATH
+      bash /submission/environment_runner.sh \
+        "$output_b" \
+        "$tool_b" \
+        "$probe" \
+        "$session_b"
+    - _
+    - "/workspace/environment_a_${TEST_TOKEN}.txt"
+    - "/workspace/environment_b_${TEST_TOKEN}.txt"
+    - "/workspace/tool_a_${TEST_TOKEN}"
+    - "/workspace/tool_b_${TEST_TOKEN}"
+    - "/workspace/environment_probe_${TEST_TOKEN}"
+    - "alpha session ${TEST_TOKEN}"
+    - "beta session ${TEST_TOKEN}"
+    - "/workspace/decoy_bin_${TEST_TOKEN}"
+    - "/workspace/legacy_bin_${TEST_TOKEN}"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: outputs_created
+      points: 10
+    - id: session_export
+      points: 15
+    - id: path_precedence
+      points: 20
+    - id: path_preservation
+      points: 15
+    - id: exact_reports
+      points: 10
+    - id: helpers_preserved
+      points: 10
+    - id: idempotency
+      points: 10

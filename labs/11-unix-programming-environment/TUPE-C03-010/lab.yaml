@@ -1,0 +1,89 @@
+contract_version: 1
+id: TUPE-C03-010
+title: Batch File Processor
+version: 1
+module: unix-programming-environment
+difficulty: beginner
+
+learning_objectives:
+  - Iterate over a variable-length list of command-line arguments.
+  - Process each supplied file exactly once and in argument order.
+  - Quote pathname arguments containing spaces and shell metacharacters.
+  - Compute per-file information without modifying the source files.
+  - Produce repeatable output without appending stale results.
+
+submission:
+  filename: batch_report.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      output_short=$1
+      output_long=$2
+      input_a=$3
+      input_b=$4
+      input_c=$5
+      input_d=$6
+      input_e=$7
+
+      bash /submission/batch_report.sh \
+        "$output_short" \
+        "$input_a" \
+        "$input_b"
+
+      bash /submission/batch_report.sh \
+        "$output_long" \
+        "$input_a" \
+        "$input_b" \
+        "$input_c" \
+        "$input_d" \
+        "$input_e"
+    - _
+    - "/workspace/batch_short_${TEST_TOKEN}.txt"
+    - "/workspace/batch_long_${TEST_TOKEN}.txt"
+    - "/workspace/batch_${TEST_TOKEN}/alpha one.txt"
+    - "/workspace/batch_${TEST_TOKEN}/beta[2].txt"
+    - "/workspace/batch_${TEST_TOKEN}/gamma*.txt"
+    - "/workspace/batch_${TEST_TOKEN}/delta dollar$.txt"
+    - "/workspace/batch_${TEST_TOKEN}/epsilon-empty.txt"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: outputs_created
+      points: 10
+    - id: short_batch
+      points: 20
+    - id: long_batch
+      points: 25
+    - id: counts
+      points: 10
+    - id: order_and_quoting
+      points: 10
+    - id: sources_preserved
+      points: 5
+    - id: idempotency
+      points: 10

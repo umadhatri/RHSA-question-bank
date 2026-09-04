@@ -1,0 +1,125 @@
+contract_version: 1
+id: TUPE-C03-011
+title: Self-Contained Bundle Builder
+version: 1
+module: unix-programming-environment
+difficulty: intermediate
+
+learning_objectives:
+  - Combine shell loops, positional parameters, quoting, and redirection in one program.
+  - Generate a self-contained shell program that reconstructs supplied files.
+  - Preserve literal shell metacharacters and exact file contents inside generated shell text.
+  - Handle a variable-length input list without accidentally including unsupplied files.
+  - Produce repeatable bundle output without modifying source files.
+
+submission:
+  filename: bundle_builder.sh
+  interpreter: bash
+
+environment:
+  image: cyberrange/rhsa-base:0.3
+  build_context: docker/base
+  timeout_seconds: 20
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+
+variables:
+  TEST_TOKEN:
+    type: random_token
+
+execution:
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+
+      bundle_short=$1
+      bundle_long=$2
+      source_dir=$3
+      hold_dir=$4
+      extract_short=$5
+      extract_long=$6
+      input_a=$7
+      input_b=$8
+      input_c=$9
+      input_d=${10}
+      input_e=${11}
+
+      restore_sources() {
+        if [[ -d "$hold_dir" && ! -e "$source_dir" ]]; then
+          mv -- "$hold_dir" "$source_dir"
+        fi
+      }
+      trap restore_sources EXIT
+
+      bash /submission/bundle_builder.sh \
+        "$bundle_short" \
+        "$input_a" \
+        "$input_b"
+
+      bash /submission/bundle_builder.sh \
+        "$bundle_long" \
+        "$input_a" \
+        "$input_b" \
+        "$input_c" \
+        "$input_d" \
+        "$input_e"
+
+      rm -rf -- "$hold_dir"
+      mv -- "$source_dir" "$hold_dir"
+
+      mkdir -p -- "$extract_short" "$extract_long"
+
+      (
+        cd "$extract_short"
+        bash "$bundle_short"
+      )
+
+      (
+        cd "$extract_long"
+        bash "$bundle_long"
+      )
+
+      restore_sources
+      trap - EXIT
+    - _
+    - "/workspace/bundle_short_${TEST_TOKEN}.sh"
+    - "/workspace/bundle_long_${TEST_TOKEN}.sh"
+    - "/workspace/bundle_sources_${TEST_TOKEN}"
+    - "/workspace/bundle_sources_hold_${TEST_TOKEN}"
+    - "/workspace/extract_short_${TEST_TOKEN}"
+    - "/workspace/extract_long_${TEST_TOKEN}"
+    - "/workspace/bundle_sources_${TEST_TOKEN}/alpha note.txt"
+    - "/workspace/bundle_sources_${TEST_TOKEN}/beta[2].conf"
+    - "/workspace/bundle_sources_${TEST_TOKEN}/gamma*.txt"
+    - "/workspace/bundle_sources_${TEST_TOKEN}/delta dollar$.txt"
+    - "/workspace/bundle_sources_${TEST_TOKEN}/epsilon-empty.txt"
+  repeat_for_idempotency: true
+
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+    - id: syntax
+      points: 5
+    - id: first_run_exit
+      points: 5
+    - id: bundles_created
+      points: 10
+    - id: short_reconstruction
+      points: 15
+    - id: long_reconstruction
+      points: 20
+    - id: literal_preservation
+      points: 10
+    - id: empty_file
+      points: 5
+    - id: no_extra_files
+      points: 10
+    - id: sources_preserved
+      points: 5
+    - id: idempotency
+      points: 15
