@@ -1,0 +1,69 @@
+contract_version: 1
+id: WS-CORE-005
+title: Environment and PATH Repair
+version: 1
+module: workshop
+difficulty: beginner
+learning_objectives:
+- Assign shell variables and make selected variables available to child processes.
+- Modify PATH while preserving the caller's existing search path.
+- Control command-search precedence by prepending a directory to PATH.
+- Export environment state before invoking another program.
+- Produce repeatable output without modifying provided commands.
+submission:
+  filename: environment_runner.sh
+  interpreter: bash
+environment:
+  image: cyberrange/rhsa-base:0.7
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+variables:
+  TEST_TOKEN:
+    type: random_token
+execution:
+  command:
+  - bash
+  - -c
+  - "set -e\noutput_a=$1\noutput_b=$2\ntool_a=$3\ntool_b=$4\nprobe=$5\nsession_a=$6\n\
+    session_b=$7\ndecoy_dir=$8\nlegacy_dir=$9\n\nbase_path=\"$decoy_dir:$legacy_dir:/usr/local/bin:/usr/bin:/bin\"\
+    \n\nPATH=\"$base_path\"\nexport PATH\nbash /submission/environment_runner.sh \\\
+    \n  \"$output_a\" \\\n  \"$tool_a\" \\\n  \"$probe\" \\\n  \"$session_a\"\n\n\
+    PATH=\"$base_path\"\nexport PATH\nbash /submission/environment_runner.sh \\\n\
+    \  \"$output_b\" \\\n  \"$tool_b\" \\\n  \"$probe\" \\\n  \"$session_b\"\n"
+  - _
+  - /workspace/environment_a_${TEST_TOKEN}.txt
+  - /workspace/environment_b_${TEST_TOKEN}.txt
+  - /workspace/tool_a_${TEST_TOKEN}
+  - /workspace/tool_b_${TEST_TOKEN}
+  - /workspace/environment_probe_${TEST_TOKEN}
+  - alpha session ${TEST_TOKEN}
+  - beta session ${TEST_TOKEN}
+  - /workspace/decoy_bin_${TEST_TOKEN}
+  - /workspace/legacy_bin_${TEST_TOKEN}
+  repeat_for_idempotency: true
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+  - id: syntax
+    points: 5
+  - id: first_run_exit
+    points: 5
+  - id: outputs_created
+    points: 10
+  - id: session_export
+    points: 15
+  - id: path_precedence
+    points: 20
+  - id: path_preservation
+    points: 15
+  - id: exact_reports
+    points: 10
+  - id: helpers_preserved
+    points: 10
+  - id: idempotency
+    points: 10

@@ -1,0 +1,50 @@
+contract_version: 1
+id: WS-ADV-001
+title: Advanced Service Failure Investigation
+version: 1
+module: workshop
+difficulty: advanced
+learning_objectives:
+- Investigate observed Linux state before remediation.
+- Preserve legitimate state while restoring secure operation.
+- Record evidence and verify repeatable recovery.
+submission:
+  filename: remediate.sh
+  interpreter: bash
+environment:
+  image: cyberrange/rhsa-base:0.7
+  build_context: docker/base
+  timeout_seconds: 30
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+execution:
+  command:
+  - bash
+  - -c
+  - "rc=0\nbash /submission/remediate.sh || rc=$?\nsleep 2\n: > /run/workshop-processes\n\
+    for p in /proc/[0-9]*; do\n  [[ -r \"$p/cmdline\" && -r \"$p/status\" ]] || continue\n\
+    \  cmd=$(tr '\\0' ' ' < \"$p/cmdline\")\n  if [[ \"$cmd\" == \"bash /opt/workshop/bin/report-job\
+    \ \" ]]; then\n    uid=$(awk '/^Uid:/{print $2}' \"$p/status\")\n    printf '%s\
+    \ %s\\n' \"${p##*/}\" \"$uid\" >> /run/workshop-processes\n  fi\ndone\nexit \"\
+    $rc\"\n"
+  repeat_for_idempotency: true
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+  - id: execution
+    points: 5
+  - id: legitimate_state
+    points: 20
+  - id: authorized_access
+    points: 10
+  - id: configuration
+    points: 15
+  - id: service
+    points: 20
+  - id: findings
+    points: 20
+  - id: idempotency
+    points: 10

@@ -1,0 +1,13 @@
+contract_version: 1
+catalogs:
+- id: linux-sysadmin-lab
+  title: Linux System Administration
+  manifest: course.yaml
+  lab_id_prefixes:
+  - TUPE-
+  - RHSA-
+- id: linux-security-workshop
+  title: Linux Security and Cyber Defense Workshop
+  manifest: workshop.course.yaml
+  lab_id_prefixes:
+  - WS-

@@ -1,0 +1,112 @@
+contract_version: 1
+id: LINUX-SECURITY-WORKSHOP
+title: Linux Security and Cyber Defense Workshop
+version: 0.1.0
+platform: CyberRange
+execution_model: disposable-container
+modules:
+- id: workshop
+  title: Linux Security and Cyber Defense Workshop
+  path: labs/13-workshop
+schedule:
+- id: WS-CORE-001
+  source_lab_id: RHSA-SHELL-001
+  title: File Organizer
+  day: 1
+  start: '13:30'
+  end: '14:05'
+  tier: Foundation
+  kind: core
+- id: WS-CORE-002
+  source_lab_id: RHSA-USERS-001
+  title: User and Group Provisioning
+  day: 1
+  start: '14:05'
+  end: '14:40'
+  tier: Foundation
+  kind: core
+- id: WS-CORE-003
+  source_lab_id: RHSA-FILE-001
+  title: Secure Shared Project Directory
+  day: 1
+  start: '14:40'
+  end: '15:15'
+  tier: Foundation
+  kind: core
+- id: WS-CORE-004
+  source_lab_id: RHSA-PROC-001
+  title: Process Management and Priority
+  day: 1
+  start: '15:30'
+  end: '16:05'
+  tier: Practitioner
+  kind: core
+- id: WS-CORE-005
+  source_lab_id: TUPE-C03-007
+  title: Environment and PATH Repair
+  day: 1
+  start: '16:05'
+  end: '16:35'
+  tier: Practitioner
+  kind: core
+- id: WS-ADV-001
+  title: Advanced Service Failure Investigation
+  day: 1
+  start: '16:35'
+  end: '17:15'
+  tier: Advanced
+  kind: challenge
+- id: WS-CORE-006
+  source_lab_id: RHSA-SUDO-001
+  title: Scoped Privileged Access
+  day: 2
+  start: '13:30'
+  end: '14:05'
+  tier: Practitioner
+  kind: core
+- id: WS-CORE-007
+  source_lab_id: RHSA-SSH-001
+  title: SSH Public Key Provisioning
+  day: 2
+  start: '14:05'
+  end: '14:40'
+  tier: Practitioner
+  kind: core
+- id: WS-CORE-008
+  source_lab_id: RHSA-TEXT-001
+  title: Failed SSH Login Analyzer
+  day: 2
+  start: '14:40'
+  end: '15:10'
+  tier: Practitioner
+  kind: core
+- id: WS-CORE-009
+  source_lab_id: RHSA-SCHED-001
+  title: Scheduled Maintenance
+  day: 2
+  start: '15:25'
+  end: '15:55'
+  tier: Practitioner
+  kind: core
+- id: WS-ADV-002
+  title: Persistence and Privilege Investigation
+  day: 2
+  start: '15:55'
+  end: '16:25'
+  tier: Advanced
+  kind: challenge
+- id: WS-ADV-003
+  title: Compromised Linux Service - Investigate, Contain, Recover
+  day: 2
+  start: '16:25'
+  end: '17:15'
+  tier: Advanced
+  kind: capstone
+stretch_lab_ids:
+- TUPE-C03-001
+- TUPE-C03-006
+- TUPE-C03-008
+- TUPE-C03-010
+- TUPE-C03-011
+- RHSA-BACKUP-001
+- RHSA-PKG-001
