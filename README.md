@@ -1,108 +1,39 @@
-# CyberRange Linux Sysadmin Bash Autograder
+# RHSA and TUPE question review
 
-A terminal-only, state-based autograder and private question bank for Linux system-administration Bash labs. Students write scripts in the terminal; each grading attempt runs in a fresh RHEL-compatible container; hidden Python graders inspect the resulting Linux state or generated artifacts and award criterion-level marks.
+This branch contains 21 existing questions and their current intended solve paths: 10 RHSA labs and 11 TUPE labs. The solve paths are the original `reference/solution.sh` scripts. Content is copied unchanged from commit `dcc167e`; any question/solution mismatches remain for review.
 
-## Question bank v0.3
+## Editing
 
-The bank currently contains five labs:
+Edit each `question.md` and its paired `reference/solution.sh` together. Keep the lab IDs and file paths unchanged so revisions can be brought back into the autograder. Commit and push your changes to `codex/questions-solve-path-review`.
 
-- `RHSA-SHELL-001` — File Organizer
-- `RHSA-FILE-001` — Secure Shared Project Directory
-- `RHSA-USERS-001` — User and Group Provisioning
-- `RHSA-TEXT-001` — Failed SSH Login Analyzer
-- `RHSA-BACKUP-001` — Automated Compressed Backup
+These scripts describe the current solve paths; they may require fixtures, helper commands, privileges, and packages supplied by the full lab environment. This review branch omits setup, graders, tests, and runtime code.
 
-See `docs/QUESTION_BANK.md` for the module map and skills covered.
+## Bringing revisions back
 
-## Contract v1
+This is a content-only review branch. Do not merge the branch wholesale into the application branch: its preparation commit removes runtime files. Instead, cherry-pick only the professor's subsequent content-edit commits, or restore the two reviewed files for each lab from this branch. Run the full autograder checks in the application checkout after integrating the revisions.
 
-The stable question/grader interface is documented in `docs/GRADER_CONTRACT.md`.
+## Questions and intended solve paths
 
-Core guarantees:
-
-- one disposable container per grading attempt;
-- seed-reproducible hidden values to discourage hard-coded answers;
-- state/artifact-based checks instead of regex command matching;
-- partial rubric scoring;
-- two filesystem snapshots (`after_first`, `after_second`) for strong idempotency checking;
-- hidden graders never copied into the student container;
-- no network access in grading containers;
-- CPU, memory, and PID limits;
-- reproducibility metadata and structured result JSON;
-- schema validation, grader unit tests, and CI checks for question authors.
-
-## Setup
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Validate the repository without Docker:
-
-```bash
-./scripts/test.sh
-```
-
-Build the Rocky Linux grading image:
-
-```bash
-./scripts/build-base.sh
-```
-
-Run every reference solution end-to-end plus the canonical broken sample:
-
-```bash
-./scripts/smoke-test.sh
-```
-
-Run one lab directly:
-
-```bash
-python3 grader/runner.py \
-  --lab labs/01-shell-basics/RHSA-SHELL-001 \
-  --submission labs/01-shell-basics/RHSA-SHELL-001/reference/solution.sh \
-  --seed 424242
-```
-
-To write a structured result for later FastAPI/CyberRange integration:
-
-```bash
-python3 grader/runner.py \
-  --lab labs/03-users-groups/RHSA-USERS-001 \
-  --submission examples/student_good.sh \
-  --seed 424242 \
-  --json-out result.json
-```
-
-## Trusted grading worker
-
-The question bank also builds a trusted worker image that preserves the hidden-grader isolation model when grading is moved off a developer machine:
-
-```bash
-./scripts/build-worker.sh
-./scripts/smoke-worker.sh
-./scripts/smoke-worker-remote.sh
-```
-
-The worker image is `cyberrange/rhsa-grading-worker:0.4.1`. It contains the private graders and launches `cyberrange/rhsa-base:0.3` (or a production ECR image override) as the untrusted student sandbox. v0.4.1 adds the ECS-facing remote job contract: short-lived HTTP(S) submission download, HTTP(S) result upload, and private-ECR sandbox pulls. See `docs/GRADING_WORKER.md`.
-
-## Repository layout
-
-```text
-linux-sysadmin-autograder/
-├── course.yaml
-├── grader/                  # generic engine
-├── schemas/                 # lab + result contracts
-├── docker/base/             # Rocky Linux base image
-├── labs/                    # private question bank
-├── templates/lab-template/  # starting point for new questions
-├── tests/                   # contract + hidden-grader unit tests
-├── scripts/
-└── docs/
-```
-
-## Security note
-
-The standalone Docker runner is the development implementation of the grading model. Production uses a trusted worker only on dedicated grading capacity. That trusted worker may receive the grading host's Docker socket and a narrowly scoped ECS task role; the untrusted student sandbox receives neither, runs with `--network none`, and never contains the hidden question bank. The CyberRange application host must never expose its Docker socket to this worker.
+| Lab | Question | Intended solve path |
+| --- | --- | --- |
+| RHSA-SHELL-001 | [Question](labs/01-shell-basics/RHSA-SHELL-001/question.md) | [Solution](labs/01-shell-basics/RHSA-SHELL-001/reference/solution.sh) |
+| RHSA-FILE-001 | [Question](labs/02-files-permissions/RHSA-FILE-001/question.md) | [Solution](labs/02-files-permissions/RHSA-FILE-001/reference/solution.sh) |
+| RHSA-USERS-001 | [Question](labs/03-users-groups/RHSA-USERS-001/question.md) | [Solution](labs/03-users-groups/RHSA-USERS-001/reference/solution.sh) |
+| RHSA-TEXT-001 | [Question](labs/04-text-processing/RHSA-TEXT-001/question.md) | [Solution](labs/04-text-processing/RHSA-TEXT-001/reference/solution.sh) |
+| RHSA-BACKUP-001 | [Question](labs/05-archives-backups/RHSA-BACKUP-001/question.md) | [Solution](labs/05-archives-backups/RHSA-BACKUP-001/reference/solution.sh) |
+| RHSA-SUDO-001 | [Question](labs/06-privileged-access/RHSA-SUDO-001/question.md) | [Solution](labs/06-privileged-access/RHSA-SUDO-001/reference/solution.sh) |
+| RHSA-PROC-001 | [Question](labs/07-process-management/RHSA-PROC-001/question.md) | [Solution](labs/07-process-management/RHSA-PROC-001/reference/solution.sh) |
+| RHSA-PKG-001 | [Question](labs/08-package-management/RHSA-PKG-001/question.md) | [Solution](labs/08-package-management/RHSA-PKG-001/reference/solution.sh) |
+| RHSA-SSH-001 | [Question](labs/09-ssh-access/RHSA-SSH-001/question.md) | [Solution](labs/09-ssh-access/RHSA-SSH-001/reference/solution.sh) |
+| RHSA-SCHED-001 | [Question](labs/10-scheduled-jobs/RHSA-SCHED-001/question.md) | [Solution](labs/10-scheduled-jobs/RHSA-SCHED-001/reference/solution.sh) |
+| TUPE-C03-001 | [Question](labs/11-unix-programming-environment/TUPE-C03-001/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-001/reference/solution.sh) |
+| TUPE-C03-002 | [Question](labs/11-unix-programming-environment/TUPE-C03-002/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-002/reference/solution.sh) |
+| TUPE-C03-003 | [Question](labs/11-unix-programming-environment/TUPE-C03-003/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-003/reference/solution.sh) |
+| TUPE-C03-004 | [Question](labs/11-unix-programming-environment/TUPE-C03-004/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-004/reference/solution.sh) |
+| TUPE-C03-005 | [Question](labs/11-unix-programming-environment/TUPE-C03-005/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-005/reference/solution.sh) |
+| TUPE-C03-006 | [Question](labs/11-unix-programming-environment/TUPE-C03-006/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-006/reference/solution.sh) |
+| TUPE-C03-007 | [Question](labs/11-unix-programming-environment/TUPE-C03-007/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-007/reference/solution.sh) |
+| TUPE-C03-008 | [Question](labs/11-unix-programming-environment/TUPE-C03-008/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-008/reference/solution.sh) |
+| TUPE-C03-009 | [Question](labs/11-unix-programming-environment/TUPE-C03-009/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-009/reference/solution.sh) |
+| TUPE-C03-010 | [Question](labs/11-unix-programming-environment/TUPE-C03-010/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-010/reference/solution.sh) |
+| TUPE-C03-011 | [Question](labs/11-unix-programming-environment/TUPE-C03-011/question.md) | [Solution](labs/11-unix-programming-environment/TUPE-C03-011/reference/solution.sh) |

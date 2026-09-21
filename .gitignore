@@ -1,5 +1,0 @@
-venv/
-__pycache__/
-*.pyc
-result.json
-.DS_Store
