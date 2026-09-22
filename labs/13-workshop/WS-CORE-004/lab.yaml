@@ -1,0 +1,63 @@
+contract_version: 1
+id: WS-CORE-004
+title: Process Management and Priority
+version: 1
+module: workshop
+difficulty: intermediate
+learning_objectives:
+- Inspect running Linux processes.
+- Identify processes by command name.
+- Terminate a specific process safely.
+- Change the scheduling priority of an existing process.
+- Avoid disrupting unrelated processes.
+- Write idempotent process-management automation.
+submission:
+  filename: manage_processes.sh
+  interpreter: bash
+environment:
+  image: cyberrange/rhsa-base:0.7
+  build_context: docker/base
+  timeout_seconds: 15
+  memory: 512m
+  cpus: 1.0
+  pids_limit: 128
+  network: none
+execution:
+  command:
+  - bash
+  - -c
+  - "student_rc=0\nbash /submission/manage_processes.sh || student_rc=$?\n\nprobe_process()\
+    \ {\n    local wanted=\"$1\"\n    local output=\"$2\"\n\n    : > \"$output\"\n\
+    \n    for procdir in /proc/[0-9]*; do\n        [[ -r \"$procdir/comm\" ]] || continue\n\
+    \        [[ -r \"$procdir/stat\" ]] || continue\n\n        local comm=\"\"\n \
+    \       IFS= read -r comm < \"$procdir/comm\" || continue\n\n        [[ \"$comm\"\
+    \ == \"$wanted\" ]] || continue\n\n        local stat=\"\"\n        IFS= read\
+    \ -r stat < \"$procdir/stat\" || continue\n\n        local fields=()\n       \
+    \ read -r -a fields <<< \"$stat\"\n\n        printf '%s %s %s\\n' \\\n       \
+    \     \"${fields[0]}\" \\\n            \"${fields[2]}\" \\\n            \"${fields[18]}\"\
+    \ \\\n            >> \"$output\"\n    done\n}\n\nprobe_process cr_runaway /run/cyberrange-runaway-state\n\
+    probe_process cr_worker  /run/cyberrange-worker-state\nprobe_process cr_control\
+    \ /run/cyberrange-control-state\n\nexit \"$student_rc\"\n"
+  repeat_for_idempotency: true
+grading:
+  total_points: 100
+  pass_score: 70
+  criteria:
+  - id: syntax
+    points: 5
+  - id: first_run_exit
+    points: 5
+  - id: runaway_terminated
+    points: 20
+  - id: worker_preserved
+    points: 15
+  - id: worker_priority
+    points: 20
+  - id: control_preserved
+    points: 15
+  - id: control_priority
+    points: 10
+  - id: no_extra_processes
+    points: 5
+  - id: idempotency
+    points: 5
