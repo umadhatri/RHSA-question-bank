@@ -19,6 +19,8 @@ COPY schemas/ ./schemas/
 COPY labs/ ./labs/
 COPY worker/ ./worker/
 COPY course.yaml ./course.yaml
+COPY catalogs.yaml ./catalogs.yaml
+COPY workshop.course.yaml ./workshop.course.yaml
 
 ARG QUESTION_BANK_REVISION=unknown
 ARG WORKER_VERSION=unknown
