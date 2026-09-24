@@ -11,8 +11,16 @@ def baseline(context):
             result[parts[1]] = parts[2]
     return result
 
-def inspect(snapshot, context, scenario):
+def case_details(context):
+    for line in context.get("setup", {}).get("stdout", "").splitlines():
+        parts = line.split()
+        if len(parts) == 6 and parts[0] == "CAPSTONE_CASE":
+            return dict(case_id=parts[1], source_ip=parts[2], rogue_comment=parts[3], cron_path=parts[4], sudo_path=parts[5])
+    return {}
+
+def inspect(snapshot, context):
     hashes = baseline(context)
+    case = case_details(context)
     def unchanged(path):
         raw = snapshot.read_bytes(path)
         return raw is not None and path in hashes and hashlib.sha256(raw).hexdigest() == hashes[path]
@@ -34,25 +42,40 @@ def inspect(snapshot, context, scenario):
     access = unchanged("/home/wsoperator/.ssh/authorized_keys") and bool(wsoperator)
     access = access and snapshot.uid("/home/wsoperator/.ssh/authorized_keys") == (wsoperator.uid if wsoperator else -1) and snapshot.mode("/home/wsoperator/.ssh/authorized_keys") == 0o600
     access = access and snapshot.mode("/home/wsoperator/.ssh") == 0o700
-    persistence = not snapshot.exists("/etc/cron.d/workshop-beacon") and not snapshot.exists("/etc/sudoers.d/workshop-override")
+    persistence = bool(case) and not snapshot.exists(case["cron_path"]) and not snapshot.exists(case["sudo_path"])
     try:
         answer = json.loads(snapshot.read_text("/workspace/findings.json") or "{}")
     except (ValueError, TypeError):
         answer = {}
-    if not isinstance(answer, dict): answer = {}
-    if scenario == 1:
-        findings = answer.get("root_causes") == ["invalid_path", "input_permissions"]
-    else:
-        findings = answer.get("affected_account") == "wsoperator" and answer.get("source_ip") == "192.0.2.44" and set(answer.get("persistence", []) if isinstance(answer.get("persistence"), list) and all(isinstance(x,str) for x in answer["persistence"]) else []) == {"ssh_key", "cron", "sudo_override"}
-        if scenario == 3:
-            findings = findings and answer.get("root_causes") == ["invalid_path", "input_permissions"]
+    if not isinstance(answer, dict):
+        answer = {}
+    timeline = answer.get("timeline")
+    verification = answer.get("verification")
+    timeline_valid = isinstance(timeline, list) and len(timeline) >= 4 and all(
+        isinstance(item, dict) and all(isinstance(item.get(key), str) and item[key].strip() for key in ("evidence", "observation", "action"))
+        for item in timeline
+    )
+    if timeline_valid:
+        evidence = "\n".join(item["evidence"] for item in timeline).lower()
+        actions = {item["action"].strip().lower() for item in timeline}
+        timeline_valid = actions >= {"contain", "eradicate", "recover", "verify"}
+        timeline_valid = timeline_valid and all(token.lower() in evidence for token in (
+            case.get("source_ip", ""), case.get("rogue_comment", ""), case.get("cron_path", ""), case.get("sudo_path", "")
+        ))
+    verification_valid = isinstance(verification, list) and len(verification) >= 2 and all(isinstance(item, str) and item.strip() for item in verification)
+    if verification_valid:
+        verification_text = "\n".join(verification).lower()
+        verification_valid = "service" in verification_text and ("ssh" in verification_text or "authorized_keys" in verification_text)
+    findings = bool(case) and answer.get("case_id") == case.get("case_id") and answer.get("affected_account") == "wsoperator"
+    findings = findings and answer.get("source_ip") == case.get("source_ip")
+    findings = findings and set(answer.get("persistence", []) if isinstance(answer.get("persistence"), list) and all(isinstance(x, str) for x in answer["persistence"]) else []) == {"ssh_key", "cron", "sudo_override"}
+    findings = findings and answer.get("root_causes") == ["invalid_path", "input_permissions"] and timeline_valid and verification_valid
     return dict(service=service, configuration=config, legitimate_state=preserved, authorized_access=access, persistence_removed=persistence, findings=findings)
 
 def grade(lab, context, snapshots):
     book = GradeBook(lab)
-    scenario = int(lab["id"].rsplit("-", 1)[1])
-    first = inspect(snapshots["after_first"], context, scenario)
-    second = inspect(snapshots["after_second"], context, scenario)
+    first = inspect(snapshots["after_first"], context)
+    second = inspect(snapshots["after_second"], context)
     keys = [c["id"] for c in lab["grading"]["criteria"] if c["id"] not in {"execution", "idempotency"}]
     ran = all(context.get(k, {}).get("returncode", 1) == 0 and not context.get(k, {}).get("timed_out", False) for k in ("first_run", "second_run"))
     book.check("execution", bool(context.get("syntax_ok")) and ran, "Both executions succeeded.", "Syntax or execution failed.")

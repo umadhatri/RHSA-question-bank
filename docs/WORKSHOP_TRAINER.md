@@ -22,9 +22,22 @@ and hypothesized, and what evidence would disprove that hypothesis.
    sudo drop-ins, then correlate the synthetic authentication events. Preserve
    the approved key, maintenance job, scoped rule, logs, and account identities.
    Removing all keys or all cron configuration fails preservation checks.
-3. Capstone: combine evidence collection, targeted removal, least privilege,
-   service recovery, and repeatability. Ask the student to distinguish observed
-   login evidence from assumptions about initial access and attacker intent.
+3. Capstone: each workspace receives one of two case identifiers and matching
+   access/persistence artifacts. Students must correlate live evidence into a
+   case-linked timeline, remove only unauthorized artifacts, restore the
+   service, and submit repeatable remediation. Do not disclose the alternate
+   case or filenames.
+
+## Capstone evidence check
+
+Automated grading verifies final state and the case-linked JSON timeline. It
+does not prove authorship. After submission, give each participant a 60-second
+individual evidence check. Ask them to show one artifact they preserved, one
+artifact they removed, the log line that connected them, and the verification
+that proved the service was secure and operating. Follow up with one local
+question, such as "Why was the break-glass key retained?" or "What would have
+made the cron file legitimate?" Record pass, partial, or retry beside the
+capstone score. Do not use a generic written reflection as a substitute.
 
 A stopped controller may retain a stale PID file after experimentation. Inspect
 that PID before removing the stale file and retrying the supplied controller.

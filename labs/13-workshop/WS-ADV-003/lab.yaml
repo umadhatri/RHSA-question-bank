@@ -7,6 +7,7 @@ difficulty: advanced
 learning_objectives:
 - Investigate observed Linux state before remediation.
 - Preserve legitimate state while restoring secure operation.
+- Correlate host evidence into a defensible incident timeline.
 - Record evidence and verify repeatable recovery.
 submission:
   filename: remediate.sh
@@ -37,15 +38,15 @@ grading:
   - id: execution
     points: 5
   - id: legitimate_state
-    points: 20
-  - id: authorized_access
     points: 15
+  - id: authorized_access
+    points: 10
   - id: persistence_removed
-    points: 20
+    points: 15
   - id: findings
-    points: 10
+    points: 20
   - id: configuration
-    points: 10
+    points: 15
   - id: service
     points: 10
   - id: idempotency
